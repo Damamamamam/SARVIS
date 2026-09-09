@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JARVIS Windows Desktop</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="dark-theme">
+  <div class="app-container">
+    <!-- Window Header / Title Bar -->
+    <header class="app-header">
+      <div class="header-brand">
+        <div class="brand-logo">
+          <div class="logo-core"></div>
+        </div>
+        <span class="brand-title">JARVIS <span class="brand-subtitle">Windows Desktop</span></span>
+      </div>
+      <div class="header-status" id="activeProviderBadge">
+        <span class="status-dot green"></span>
+        <span class="status-text" id="activeProviderName">Rotator Ready</span>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="btnMinimize" title="Minimize to Tray">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19 13H5v-2h14v2z"/></svg>
+        </button>
+        <button class="icon-btn danger" id="btnClose" title="Close App">
+          <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Body with Sidebar Navigation -->
+    <div class="app-body">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <nav class="nav-menu">
+          <button class="nav-item active" data-tab="chatView">
+            <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+            <span>Assistant</span>
+          </button>
+          <button class="nav-item" data-tab="rotatorView">
+            <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+            <span>8-Key Rotator</span>
+          </button>
+          <button class="nav-item" data-tab="controlsView">
+            <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+            <span>Windows Control</span>
+          </button>
+          <button class="nav-item" data-tab="guardView">
+            <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+            <span>Screen Guard</span>
+          </button>
+          <button class="nav-item" data-tab="settingsView">
+            <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+            <span>API Keys</span>
+          </button>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="sys-info">
+            <span class="sys-label">Active App</span>
+            <span class="sys-val" id="lblActiveApp">Scanning...</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- View Containers -->
+      <main class="content-area">
+        <!-- 1. Assistant / Chat View -->
+        <section class="view-panel active" id="chatView">
+          <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+              <div class="message assistant">
+                <div class="msg-avatar">J</div>
+                <div class="msg-content">
+                  Hello! I am **JARVIS**, your Windows personal assistant. How can I help you today? You can ask me to run Windows tasks, set reminders, check weather, search the web, or adjust volume and brightness.
+                </div>
+              </div>
+            </div>
+            <div class="chat-suggestions">
+              <button class="chip-btn" data-query="What is the weather today?">🌤️ Weather</button>
+              <button class="chip-btn" data-query="Remind me to submit report tomorrow at 9am">⏰ Remind me</button>
+              <button class="chip-btn" data-query="Turn up system volume">🔊 Volume Up</button>
+              <button class="chip-btn" data-query="Search Wikipedia for Quantum Computing">🌐 Wiki Search</button>
+            </div>
+            <div class="chat-input-bar">
+              <button class="mic-btn" id="btnVoice" title="Toggle Speech Listening">
+                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
+              </button>
+              <input type="text" id="txtInput" placeholder="Ask JARVIS anything or type a Windows command..." autocomplete="off">
+              <button class="send-btn" id="btnSend" title="Send Message">
+                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. 8-Key Rotator Dashboard View -->
+        <section class="view-panel" id="rotatorView">
+          <div class="panel-header">
+            <h2>8-Key API Failover Rotator</h2>
+            <p>Monitors LLM key health and seamlessly switches providers on rate limits or errors.</p>
+          </div>
+          <div class="rotator-grid" id="rotatorGrid">
+            <!-- Dynamically populated by app.js -->
+          </div>
+          <div class="card log-card">
+            <h3>Rotation & Failover History</h3>
+            <div class="log-list" id="rotatorLog">
+              <div class="log-empty">No failovers logged yet. System running smoothly.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. Windows System Controls View -->
+        <section class="view-panel" id="controlsView">
+          <div class="panel-header">
+            <h2>Windows System Automation</h2>
+            <p>Directly control Windows system parameters, applications, and settings.</p>
+          </div>
+          <div class="controls-grid">
+            <div class="card control-card">
+              <h3>🔊 Audio Volume</h3>
+              <div class="action-row">
+                <button class="btn primary" id="btnVolDown">Vol -</button>
+                <button class="btn primary" id="btnVolMute">Mute Toggle</button>
+                <button class="btn primary" id="btnVolUp">Vol +</button>
+              </div>
+            </div>
+            <div class="card control-card">
+              <h3>☀️ Display Brightness</h3>
+              <div class="slider-row">
+                <input type="range" id="rngBrightness" min="0" max="255" value="128">
+                <span id="lblBrightnessVal">50%</span>
+              </div>
+            </div>
+            <div class="card control-card span-2">
+              <h3>🚀 Quick Application Launcher</h3>
+              <div class="app-launch-grid">
+                <button class="app-chip" data-app="chrome">🌐 Google Chrome</button>
+                <button class="app-chip" data-app="code">💻 VS Code</button>
+                <button class="app-chip" data-app="terminal">🖥️ Terminal</button>
+                <button class="app-chip" data-app="explorer">📁 File Explorer</button>
+                <button class="app-chip" data-app="calculator">🧮 Calculator</button>
+                <button class="app-chip" data-app="notepad">📝 Notepad</button>
+                <button class="app-chip" data-app="settings">⚙️ Windows Settings</button>
+                <button class="app-chip" data-app="spotify">🎵 Spotify</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. Screen Guard & Reminders View -->
+        <section class="view-panel" id="guardView">
+          <div class="panel-header">
+            <h2>Screen Guard & Tasks</h2>
+            <p>Monitors screen time usage on Windows and extracts voice task reminders.</p>
+          </div>
+          <div class="guard-layout">
+            <div class="card">
+              <h3>⏰ Active Voice Reminders</h3>
+              <div class="reminders-list" id="remindersList">
+                <div class="empty-state">No pending reminders set.</div>
+              </div>
+            </div>
+            <div class="card">
+              <h3>🛡️ Windows App Usage Watchdog</h3>
+              <div class="usage-list" id="usageList">
+                <div class="empty-state">Monitoring active Windows processes...</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 5. Settings / API Keys View -->
+        <section class="view-panel" id="settingsView">
+          <div class="panel-header">
+            <h2>API Key Management</h2>
+            <p>Configure your 8 provider API keys. At least one key is recommended for full AI capabilities.</p>
+          </div>
+          <form class="keys-form" id="keysForm">
+            <div class="key-field">
+              <label for="key_gemini">Google Gemini Key (Flash 2.5)</label>
+              <input type="password" id="JARVIS_GEMINI_API_KEY" placeholder="AIzaSy...">
+            </div>
+            <div class="key-field">
+              <label for="key_groq">Groq Key (Llama 3.1 8B)</label>
+              <input type="password" id="JARVIS_GROQ_API_KEY" placeholder="gsk_...">
+            </div>
+            <div class="key-field">
+              <label for="key_openrouter">OpenRouter Key</label>
+              <input type="password" id="JARVIS_OPENROUTER_API_KEY" placeholder="sk-or-v1-...">
+            </div>
+            <div class="key-field">
+              <label for="key_cerebras">Cerebras Key</label>
+              <input type="password" id="JARVIS_CEREBRAS_API_KEY" placeholder="csk-...">
+            </div>
+            <div class="key-field">
+              <label for="key_mistral">Mistral Key</label>
+              <input type="password" id="JARVIS_MISTRAL_API_KEY" placeholder="...">
+            </div>
+            <div class="key-field">
+              <label for="key_together">Together AI Key</label>
+              <input type="password" id="JARVIS_TOGETHER_API_KEY" placeholder="...">
+            </div>
+            <div class="key-field">
+              <label for="key_cohere">Cohere Key</label>
+              <input type="password" id="JARVIS_COHERE_API_KEY" placeholder="...">
+            </div>
+            <div class="key-field">
+              <label for="key_deepseek">DeepSeek Key</label>
+              <input type="password" id="JARVIS_DEEPSEEK_API_KEY" placeholder="sk-...">
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn accent">Save API Keys</button>
+              <span class="save-status" id="lblSaveStatus"></span>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
