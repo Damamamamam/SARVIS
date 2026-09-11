@@ -130,7 +130,7 @@ function createWindow(): void {
     minHeight: 600,
     title: 'SARVIS Windows Desktop',
     backgroundColor: '#0B0F19',
-    show: false,
+    show: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -141,9 +141,13 @@ function createWindow(): void {
   const uiPath = path.join(__dirname, '../ui/index.html');
   mainWindow.loadFile(uiPath);
 
+  mainWindow.webContents.on('did-finish-load', () => {
+    mainWindow?.webContents.send('app:first-run-state', isFirstRun());
+  });
+
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show();
-    // Tell the renderer whether this is the first run so it can show the wizard
+    mainWindow?.focus();
     mainWindow?.webContents.send('app:first-run-state', isFirstRun());
   });
 
@@ -157,44 +161,47 @@ function createWindow(): void {
 }
 
 function createTray(): void {
-  // Create 16x16 canvas/svg icon for tray
-  const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%236366F1" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><circle cx="12" cy="12" r="3" fill="%2310B981"/></svg>`;
-  const iconBuffer = Buffer.from(iconSvg);
-  const icon = nativeImage.createFromBuffer(iconBuffer);
+  try {
+    // 16x16 circular indigo icon PNG data URL
+    const pngDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAZElEQVQ4T2NkoBAwUqifYdQAkG9G/v//z0CcmZl5P1EGMTAwMCw/9P8fUQMIPAZV44cNgA0lZgNIMoFkA6D2oBsA0wQ3gGAY0AygmwGjBhA7DEB2E90AkgNA5kBqB5BsAFIJAEt7Fj40q6Z2AAAAAElFTkSuQmCC';
+    const icon = nativeImage.createFromDataURL(pngDataUrl);
 
-  tray = new Tray(icon);
-  tray.setToolTip('SARVIS Windows Assistant');
+    tray = new Tray(icon);
+    tray.setToolTip('SARVIS Windows Assistant');
 
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: 'Open SARVIS',
-      click: () => {
-        mainWindow?.show();
-        mainWindow?.focus();
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: 'Open SARVIS',
+        click: () => {
+          mainWindow?.show();
+          mainWindow?.focus();
+        },
       },
-    },
-    {
-      label: 'Rotator Status',
-      click: () => {
-        mainWindow?.show();
-        mainWindow?.webContents.send('navigate', 'rotator');
+      {
+        label: 'Rotator Status',
+        click: () => {
+          mainWindow?.show();
+          mainWindow?.webContents.send('navigate', 'rotator');
+        },
       },
-    },
-    { type: 'separator' },
-    {
-      label: 'Quit SARVIS',
-      click: () => {
-        (app as any).isQuitting = true;
-        app.quit();
+      { type: 'separator' },
+      {
+        label: 'Quit SARVIS',
+        click: () => {
+          (app as any).isQuitting = true;
+          app.quit();
+        },
       },
-    },
-  ]);
+    ]);
 
-  tray.setContextMenu(contextMenu);
-  tray.on('double-click', () => {
-    mainWindow?.show();
-    mainWindow?.focus();
-  });
+    tray.setContextMenu(contextMenu);
+    tray.on('double-click', () => {
+      mainWindow?.show();
+      mainWindow?.focus();
+    });
+  } catch (err) {
+    console.error('Tray creation failed (non-fatal):', err);
+  }
 }
 
 function registerIpc(): void {
@@ -256,14 +263,20 @@ function registerIpc(): void {
 }
 
 app.whenReady().then(() => {
-  initJarvis();
-  registerIpc();
-  createWindow();
-  createTray();
+  try {
+    initJarvis();
+    registerIpc();
+    createWindow();
+    createTray();
+  } catch (err) {
+    console.error('Fatal initialization error in Electron app:', err);
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
+}).catch((err) => {
+  console.error('Error during app.whenReady:', err);
 });
 
 app.on('window-all-closed', () => {
