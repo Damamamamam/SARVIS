@@ -130,7 +130,7 @@ export class AgentBrain {
   /** Feed a talk-state signal from OwnerTalkDetector (module D). */
   onTalkState(state: TalkState): AgentEvent {
     const event: AgentEvent = { type: 'talk_state', at: new Date().toISOString(), data: { state } };
-    if (state === 'TALKING_TO_JARVIS') {
+    if (state === 'TALKING_TO_SARVIS') {
       this.profile.routines.push({ timeWindow: new Date().toTimeString().slice(0, 5), observedApps: [], heardKeywords: [] });
     }
     return event;

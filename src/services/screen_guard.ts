@@ -1,14 +1,10 @@
 /**
  * DoomscrollGuard — social-media screen-time watchdog (screen-guard module).
  *
- * Architecture ref: docs/architecture.md §2 (doomscroll_guard.kt native).
- *
- * On Android the real tracking uses UsageStatsManager + AccessibilityService to
- * learn the foreground app. This is the brain-side controller: it consumes
- * foreground-app events and accumulated usage, maintains per-app daily totals,
- * and emits a nudge (voice/toast trigger) when a flagged "doomscroll" app
- * crosses the daily threshold. The same state machine runs identically on both
- * the 1st (personal) and 2nd (work) Android Spaces.
+ * On Windows the real tracking uses process monitoring to learn the foreground app.
+ * This is the brain-side controller: it consumes foreground-app events and accumulated
+ * usage, maintains per-app daily totals, and emits a nudge (voice/toast trigger)
+ * when a flagged "doomscroll" app crosses the daily threshold.
  */
 import type { ScreenTimeEntry } from './types.js';
 
@@ -33,16 +29,16 @@ export interface NudgeEvent {
 export type GuardListener = (e: NudgeEvent) => void;
 
 const DEFAULT_FLAGGED = [
-  'com.instagram.android',
-  'com.zhiliaoapp.musically',
-  'com.ss.android.ugc.trill',
-  'com.snapchat.android',
-  'com.facebook.katana',
-  'com.twitter.android',
-  'com.reddit.frontpage',
-  'com.pinterest',
-  'com.google.android.youtube',
-  'com.bytedance.android.app',
+  'chrome.exe',
+  'msedge.exe',
+  'firefox.exe',
+  'opera.exe',
+  'spotify.exe',
+  'discord.exe',
+  'slack.exe',
+  'teams.exe',
+  'zoom.exe',
+  'youtube.exe',
 ];
 
 export class DoomscrollGuard {

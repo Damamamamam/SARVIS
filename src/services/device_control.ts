@@ -1,11 +1,9 @@
 /**
  * DeviceControlService — typed command-dispatch layer (Module B).
  *
- * Sends structured commands over a local WebSocket to the Android
- * Accessibility Service bridge. Commands execute serially; each must
+ * Sends structured commands over a local WebSocket to the Windows
+ * client bridge. Commands execute serially; each must
  * be acknowledged (or timeout) before the next is dispatched.
- *
- * Architecture ref: docs/architecture.md §4.2
  */
 
 /* ------------------------------------------------------------------ */
@@ -90,7 +88,7 @@ export interface QueueEntry {
 /* ------------------------------------------------------------------ */
 
 export interface DeviceControlConfig {
-  /** WebSocket URL for the Android bridge. Default: ws://127.0.0.1:9741 */
+  /** WebSocket URL for the client bridge. Default: ws://127.0.0.1:9741 */
   bridgeUrl?: string;
   /** Command execution timeout in ms. Default: 10_000 */
   commandTimeoutMs?: number;
@@ -418,7 +416,7 @@ export class DeviceControlService {
 
   private handleAck(msg: AckEnvelope): void {
     if (this.pendingAck && this.pendingAck.id === msg.id) {
-      // Android often sends type=ack without payload.success; treat that as success.
+      // Client often sends type=ack without payload.success; treat that as success.
       const ok = msg.type === 'ack' && msg.payload.success !== false;
       if (ok) {
         this.pendingAck.resolve({ ...msg.payload, success: true });

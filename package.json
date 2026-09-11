@@ -1,23 +1,22 @@
 {
-  "name": "jarvis-brain",
+  "name": "sarvis-brain",
   "version": "0.1.0",
-  "description": "JARVIS Windows Assistant: 8-key API rotator, Windows automation, intent routing, tools",
-  "main": "dist/src/electron/main.js",
+  "description": "SARVIS Windows Assistant: 8-key API rotator, Windows automation, intent routing, tools",
+  "main": "dist/src/server/index.js",
   "type": "module",
   "private": true,
   "scripts": {
     "build": "tsc && npm run copy-ui",
     "copy-ui": "node -e \"const fs = require('fs'); fs.mkdirSync('dist/src/ui', { recursive: true }); fs.copyFileSync('src/ui/index.html', 'dist/src/ui/index.html'); fs.copyFileSync('src/ui/styles.css', 'dist/src/ui/styles.css'); fs.copyFileSync('src/ui/app.js', 'dist/src/ui/app.js');\"",
-    "start": "electron .",
+    "start": "node dist/src/server/index.js",
     "start:server": "node dist/src/server/index.js",
-    "dev": "npm run build && electron .",
-    "package:win": "npm run build && electron-builder --win",
+    "dev": "npm run build && node dist/src/server/index.js",
     "test": "tsc && node --test dist/test/*.test.js",
     "test:rotator": "tsc && node --test dist/test/api_rotator.test.js",
     "test:device": "tsc && node --test dist/test/device_control.test.js",
     "test:audio": "tsc && node --test dist/test/audio_recorder.test.js",
     "test:vision": "tsc && node --test dist/test/vision_tracker.test.js",
-    "test:protocol": "tsc && node --test dist/test/android_payload.test.js"
+    "test:protocol": "tsc && node --test dist/test/client_payload.test.js"
   },
   "dependencies": {
     "ws": "^8.18.3"
@@ -25,22 +24,6 @@
   "devDependencies": {
     "@types/node": "^24.0.0",
     "@types/ws": "^8.18.1",
-    "electron": "^31.0.0",
-    "electron-builder": "^24.13.3",
     "typescript": "^5.5.0"
-  },
-  "build": {
-    "appId": "com.jarvis.windows.app",
-    "productName": "JARVIS Windows",
-    "files": [
-      "dist/**/*",
-      ".env.example"
-    ],
-    "win": {
-      "target": [
-        "nsis",
-        "portable"
-      ]
-    }
   }
 }

@@ -1,9 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { isAckSuccess, pcm16leBase64ToFloat32, toAndroidDevicePayload } from '../src/protocol/android_payload.js';
+import { isAckSuccess, pcm16leBase64ToFloat32, toClientDevicePayload } from '../src/protocol/client_payload.js';
 
-test('swipe maps TS fromX to Android startX', () => {
-  const p = toAndroidDevicePayload({
+test('swipe maps TS fromX to client startX', () => {
+  const p = toClientDevicePayload({
     category: 'screen',
     action: 'swipe',
     fromX: 1,
@@ -19,7 +19,7 @@ test('swipe maps TS fromX to Android startX', () => {
 });
 
 test('pullNotifications maps to notifications', () => {
-  const p = toAndroidDevicePayload({ category: 'system', action: 'pullNotifications' });
+  const p = toClientDevicePayload({ category: 'system', action: 'pullNotifications' });
   assert.equal(p.action, 'notifications');
 });
 

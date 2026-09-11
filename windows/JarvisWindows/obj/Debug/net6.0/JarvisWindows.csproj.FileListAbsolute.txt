@@ -1,0 +1,5 @@
+C:\Users\give it back\OneDrive\Desktop\NVMUN\brain\windows\JarvisWindows\obj\Debug\net6.0\JarvisWindows.csproj.AssemblyReference.cache
+C:\Users\give it back\OneDrive\Desktop\NVMUN\brain\windows\JarvisWindows\obj\Debug\net6.0\JarvisWindows.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\give it back\OneDrive\Desktop\NVMUN\brain\windows\JarvisWindows\obj\Debug\net6.0\JarvisWindows.AssemblyInfoInputs.cache
+C:\Users\give it back\OneDrive\Desktop\NVMUN\brain\windows\JarvisWindows\obj\Debug\net6.0\JarvisWindows.AssemblyInfo.cs
+C:\Users\give it back\OneDrive\Desktop\NVMUN\brain\windows\JarvisWindows\obj\Debug\net6.0\JarvisWindows.csproj.CoreCompileInputs.cache

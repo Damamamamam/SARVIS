@@ -1,17 +1,17 @@
 /**
- * JARVIS brain process: WebSocket server + agent loop.
+ * SARVIS brain process: WebSocket server + agent loop.
  *
  *   npm start
- *   JARVIS_BIND=0.0.0.0 JARVIS_PORT=9741 npm start
+ *   SARVIS_BIND=0.0.0.0 SARVIS_PORT=9741 npm start
  */
 import { JarvisBrain } from '../agent/brain.js';
 import { loadKeysFromEnv } from '../config/load_keys.js';
-import { pcm16leBase64ToFloat32 } from '../protocol/android_payload.js';
+import { pcm16leBase64ToFloat32 } from '../protocol/client_payload.js';
 import type { FaceLandmarks } from '../services/vision_tracker.js';
 import { BrainBridge, type BridgeMessage } from './bridge.js';
 
-const PORT = Number(process.env.JARVIS_PORT ?? 9741);
-const HOST = process.env.JARVIS_BIND ?? '0.0.0.0';
+const PORT = Number(process.env.SARVIS_PORT ?? 9741);
+const HOST = process.env.SARVIS_BIND ?? '0.0.0.0';
 
 function asLandmarks(payload: Record<string, unknown>): FaceLandmarks | null {
   const lm = payload.landmarks as FaceLandmarks | undefined;
@@ -24,7 +24,7 @@ function asLandmarks(payload: Record<string, unknown>): FaceLandmarks | null {
 async function main(): Promise<void> {
   const keys = loadKeysFromEnv();
   if (keys.length === 0) {
-    console.warn('No JARVIS_*_API_KEY env vars set — LLM path will run degraded/local fallback.');
+    console.warn('No SARVIS_*_API_KEY env vars set — LLM path will run degraded/local fallback.');
   }
 
   const bridge = new BrainBridge(HOST, PORT);
@@ -71,7 +71,7 @@ async function main(): Promise<void> {
   });
 
   await bridge.listen();
-  console.log(`JARVIS brain listening on ws://${HOST}:${PORT}`);
+  console.log(`SARVIS brain listening on ws://${HOST}:${PORT}`);
   console.log(`Emulator URL: ws://10.0.2.2:${PORT}`);
   console.log(`Phone on same Wi-Fi: ws://<this-pc-lan-ip>:${PORT}`);
 

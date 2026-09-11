@@ -1,9 +1,9 @@
-# JARVIS Phone Assistant — System Architecture
+# SARVIS Desktop Assistant — System Architecture
 
 > **Version**: 0.1.0  
-> **Generated**: Phase 1 — Antigravity Architecture Blueprint  
-> **Target Platform**: Android 13+ (API 33+)  
-> **Brain Runtime**: Node.js / TypeScript (embedded via wry/webview or bridged over localhost WebSocket)
+> **Generated**: SARVIS Framework Architecture Blueprint  
+> **Target Platform**: Windows 10+  
+> **Brain Runtime**: Node.js / TypeScript (bridged over localhost WebSocket)
 
 ---
 
@@ -11,15 +11,15 @@
 
 ```mermaid
 graph TD
-    subgraph Android["Android App Layer (Kotlin)"]
+    subgraph Windows["Windows App Layer (Kotlin)"]
         ACC["Accessibility Service"]
         MIC["MediaRecorder / AudioRecord"]
         CAM["CameraX Front Camera"]
-        TTS["Android TTS Engine"]
-        UI["JARVIS UI / Overlay"]
+        TTS["Windows TTS Engine"]
+        UI["SARVIS UI / Overlay"]
     end
 
-    subgraph Brain["JARVIS Brain (TypeScript / Node)"]
+    subgraph Brain["SARVIS Brain (TypeScript / Node)"]
         AB["AgentBrain"]
         AR["APIRotatorService"]
         DC["DeviceControlService"]
@@ -82,15 +82,15 @@ graph TD
 | E | AgentBrain | TypeScript | `src/services/agent_brain.ts` | Brain |
 | F | Free Tools Registry | TypeScript | `src/tools/free_tools.ts` | Brain |
 | G | Type Definitions | TypeScript | `src/services/types.ts` | Brain |
-| H | Android Bridge | Kotlin | `android/` (future) | Native |
+| H | Windows Bridge | Kotlin | `android/` (future) | Native |
 
 ---
 
 ## §3 — Communication Protocol
 
-### Brain ↔ Android Bridge
+### Brain ↔ Windows Bridge
 
-All communication between the TypeScript brain and the Android native layer uses **JSON messages over a local WebSocket** (`ws://localhost:9741`).
+All communication between the TypeScript brain and the Windows native layer uses **JSON messages over a local WebSocket** (`ws://localhost:9741`).
 
 ```
 ┌──────────────────────────────────────────────────────┐
@@ -108,7 +108,7 @@ All communication between the TypeScript brain and the Android native layer uses
 
 **Command flow:**
 1. Brain sends `{ type: "command", module: "device", payload: { action: "launchApp", pkg: "com.example" } }`
-2. Android bridge executes via Accessibility Service
+2. Windows bridge executes via Accessibility Service
 3. Bridge replies `{ type: "ack", id: "<same-id>", payload: { success: true } }`
 4. On failure: `{ type: "error", id: "<same-id>", payload: { code: "APP_NOT_FOUND", message: "..." } }`
 
@@ -221,7 +221,7 @@ flowchart LR
     FACE -->|face found| GAZE["Gaze\nEstimation"]
     GAZE -->|not facing lens| RC["ROOM_CONVERSATION"]
     GAZE -->|facing lens| LIP["Lip Movement\nTracking"]
-    LIP -->|mouth moving| TJ["TALKING_TO_JARVIS"]
+    LIP -->|mouth moving| TJ["TALKING_TO_SARVIS"]
     LIP -->|mouth still| RC2["ROOM_CONVERSATION"]
 ```
 
@@ -230,7 +230,7 @@ flowchart LR
 2. Compute Mouth Aspect Ratio (MAR): `MAR = vertical_dist / horizontal_dist`
 3. Track MAR deltas over a rolling window of 10 frames
 4. If `stddev(MAR_deltas) > threshold` → mouth is moving
-5. Combined with gaze angle `< 30°` from lens axis → `TALKING_TO_JARVIS`
+5. Combined with gaze angle `< 30°` from lens axis → `TALKING_TO_SARVIS`
 
 **Thresholds (configurable):**
 | Parameter | Default | Description |
@@ -269,7 +269,7 @@ flowchart TD
     end
 
     subgraph Enforcement
-        E1["Keys loaded from env / Android Keystore"]
+        E1["Keys loaded from env / Windows Keystore"]
         E2["Rolling buffer zeroed on kill"]
         E3["State machine prevents KILLED→RECORDING"]
         E4["No frame serialization to storage"]

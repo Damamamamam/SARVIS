@@ -9,7 +9,7 @@
  *   vision (camera) ─┐
  *   audio  (mic)    ─┼─► JarvisBrain ─► AgentBrain ─► APIRotatorService
  *   screen (guard)  ─┘                  │            (8-key failover)
- *                                      └─► DeviceControlService (Android bridge)
+ *                                      └─► DeviceControlService (Client bridge)
  */
 import { AgentBrain, type BrainConfig, type BrainResult } from '../services/agent_brain.js';
 import { APIRotatorService } from '../services/api_rotator.js';

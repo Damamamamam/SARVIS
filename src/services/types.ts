@@ -1,4 +1,4 @@
-/** Shared types for the JARVIS brain (see docs/architecture.md §5). */
+/** Shared types for the SARVIS brain (see docs/architecture.md §5). */
 
 export interface KeyConfig {
   id: string;
@@ -71,7 +71,7 @@ export interface BehaviorProfile {
   tone: 'CALM' | 'CHEERFUL' | 'FORMAL';
 }
 
-export type TalkState = 'TALKING_TO_JARVIS' | 'ROOM_CONVERSATION' | 'NO_FACE';
+export type TalkState = 'TALKING_TO_SARVIS' | 'ROOM_CONVERSATION' | 'NO_FACE';
 
 export interface ToolResult {
   name: string;

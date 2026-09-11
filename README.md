@@ -1,53 +1,50 @@
-# JARVIS Windows Desktop Assistant
+# SARVIS Windows Desktop Assistant
 
-JARVIS is a native Windows desktop assistant powered by Electron, featuring an 8-key API rotator, speech/voice interactions, Windows system automation, screen-time watching, and a modern glassmorphic interface.
+SARVIS is a Windows desktop assistant with a Node.js/TypeScript brain and .NET 8.0 client, featuring an 8-key API rotator, speech/voice interactions, Windows system automation, and screen-time monitoring.
 
 ## 🏗️ Architecture
 
-- **Windows Desktop App (Electron)**: Native Windows window with glassmorphism UI & system tray integration.
-- **Local Brain Orchestrator**: In-process Node.js brain handling intent routing, tool execution, and personalization.
+- **Windows Client (.NET 8.0)**: Console application with audio capture, voice I/O, window automation, and secure storage.
+- **Brain (Node.js/TypeScript)**: WebSocket server handling intent routing, API rotator, device control, and personalization.
 - **8-Key API Rotator**: Failover across Gemini, Groq, OpenRouter, Cerebras, Mistral, Together, Cohere, and DeepSeek.
-- **Windows System Controller**: Control Windows volume, brightness, applications, and system tasks.
-- **Windows Process Watchdog**: Active window screen-time watcher and doomscroll guard.
+- **Windows Automation**: Window control via Windows API (minimize, maximize, type text).
+- **Screen Time Monitoring**: Active window tracking and doomscroll guard.
 
 ## 📋 Prerequisites
 
 - Windows 10/11
 - Node.js 18+
-- npm or yarn
+- .NET 8.0 SDK (pre-installed at `C:\Users\give it back\AppData\Local\Microsoft\dotnet\`)
 
 ## 🚀 Quick Start
 
-### 1. Install & Configure
+### 1. Start the Brain
 
-```bash
-# Install dependencies
-npm install
-
-# Copy environment template (if not already done)
-cp .env.example .env
-
-# Edit .env and add your API keys (or configure directly in the app UI)
+```powershell
+cd "C:\Users\give it back\OneDrive\Desktop\NVMUN\brain"
+npm run build
+npm run start:server
 ```
 
-### 2. Launch JARVIS
+The brain will start on `ws://localhost:9741`. With no API keys, it runs in degraded mode.
 
-```bash
-# Launch app in development mode
-npm run dev
+### 2. Start the Windows Client
 
-# Or run via startup script
-start-brain.bat
+```powershell
+cd "C:\Users\give it back\OneDrive\Desktop\NVMUN\brain\windows\JarvisWindows"
+$env:PATH = "C:\Users\give it back\AppData\Local\Microsoft\dotnet;$env:PATH"
+dotnet run
 ```
 
-### 3. Package Standalone Windows Executable (.exe)
+### 3. Configure API Keys (Optional)
 
-```bash
-# Package into Windows NSIS Installer and Portable .exe
-npm run package:win
+```powershell
+$env:SARVIS_GEMINI_API_KEY="your-key"
+$env:SARVIS_GROQ_API_KEY="your-key"
+# ... up to 8 providers
 ```
 
-The compiled installer will be created in the `dist/` directory.
+Then restart the brain.
 
 ## 🧪 Testing
 
@@ -69,15 +66,32 @@ brain/
 ├── src/
 │   ├── agent/           # Main brain orchestration
 │   ├── config/         # Environment key loader
-│   ├── electron/       # Electron main process & preload script
-│   ├── services/       # Core services (rotator, win_control, win_screen_guard, etc.)
+│   ├── server/         # WebSocket server and bridge
+│   ├── services/       # Core services (rotator, device_control, audio_recorder, etc.)
 │   ├── tools/          # Free web tools (weather, wikipedia, news, search, etc.)
-│   └── ui/             # Glassmorphic HTML/CSS/JS interface
+│   └── ui/             # Legacy Electron UI (deprecated)
+├── windows/
+│   └── JarvisWindows/  # .NET Windows client
+│       ├── BrainClient.cs      # WebSocket client
+│       ├── AudioCapture.cs     # NAudio capture
+│       ├── VoiceServices.cs    # Windows Speech API
+│       ├── WindowAutomation.cs  # Windows API automation
+│       ├── SecureStorage.cs    # DPAPI encryption
+│       └── Program.cs          # Main application
 ├── test/               # Unit tests
-├── build.bat           # Windows build script
-├── start-brain.bat     # App launcher script
 └── package.json
 ```
+
+## 🖥️ Windows Client Commands
+
+- **q** - Quit the application
+- **s** - Speak text (interactive TTS)
+- **h** - Show help
+- **[any text]** - Send text to brain for processing
+
+## 📄 License
+
+Private project - All rights reserved
 
 ## 📄 License
 

@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# JARVIS Windows App Build Script
+# SARVIS Windows App Build Script
 
 set -e
 
 echo "===================================="
-echo "JARVIS Windows App Build Script"
+echo "SARVIS Windows App Build Script"
 echo "===================================="
 echo
 

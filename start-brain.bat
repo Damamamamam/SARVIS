@@ -1,8 +1,8 @@
 @echo off
-REM JARVIS Windows Desktop Application Startup Script
+REM SARVIS Windows Desktop Application Startup Script
 
 echo ====================================
-echo Starting JARVIS Windows Desktop
+echo Starting SARVIS Windows Desktop
 echo ====================================
 echo.
 
@@ -24,5 +24,5 @@ if not exist .env (
     )
 )
 
-echo Launching JARVIS Windows Assistant...
+echo Launching SARVIS Windows Assistant...
 call npm run dev

@@ -44,9 +44,9 @@ test('screen guard nudge surfaces through JarvisBrain', () => {
   const j = new JarvisBrain({ keys, screenThresholdMs: 1000 });
   let nudge: any = null;
   j.onNudge((e) => (nudge = e));
-  j.screen('com.instagram.android', 'Instagram', 1500);
+  j.screen('chrome.exe', 'Chrome', 1500);
   assert.ok(nudge);
-  assert.equal(nudge.app, 'Instagram');
+  assert.equal(nudge.app, 'Chrome');
   j.dispose();
 });
 

@@ -1,5 +1,5 @@
 /**
- * JARVIS Windows Desktop - Frontend Client Application
+ * SARVIS Windows Desktop - Frontend Client Application
  */
 document.addEventListener('DOMContentLoaded', async () => {
   // Navigation Tabs
@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const res = await window.jarvisAPI.hear(text);
       appendMessage('assistant', res.reply || 'No response returned.');
     } catch (err) {
-      appendMessage('assistant', 'Error communicating with JARVIS brain: ' + err.message);
+      appendMessage('assistant', 'Error communicating with SARVIS brain: ' + err.message);
     }
   }
 
@@ -189,14 +189,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     e.preventDefault();
     const updates = {};
     const keyIds = [
-      'JARVIS_GEMINI_API_KEY',
-      'JARVIS_GROQ_API_KEY',
-      'JARVIS_OPENROUTER_API_KEY',
-      'JARVIS_CEREBRAS_API_KEY',
-      'JARVIS_MISTRAL_API_KEY',
-      'JARVIS_TOGETHER_API_KEY',
-      'JARVIS_COHERE_API_KEY',
-      'JARVIS_DEEPSEEK_API_KEY',
+      'SARVIS_GEMINI_API_KEY',
+      'SARVIS_GROQ_API_KEY',
+      'SARVIS_OPENROUTER_API_KEY',
+      'SARVIS_CEREBRAS_API_KEY',
+      'SARVIS_MISTRAL_API_KEY',
+      'SARVIS_TOGETHER_API_KEY',
+      'SARVIS_COHERE_API_KEY',
+      'SARVIS_DEEPSEEK_API_KEY',
     ];
     keyIds.forEach(id => {
       const el = document.getElementById(id);

@@ -1,5 +1,5 @@
 /**
- * Main process for JARVIS Windows Desktop Application.
+ * Main process for SARVIS Windows Desktop Application.
  *
  * Runs the Electron window, system tray, local JarvisBrain orchestrator,
  * 8-Key API Rotator, Windows native controls, and IPC bridge.
@@ -96,7 +96,7 @@ function createWindow(): void {
     height: 800,
     minWidth: 900,
     minHeight: 600,
-    title: 'JARVIS Windows Desktop',
+    title: 'SARVIS Windows Desktop',
     backgroundColor: '#0B0F19',
     show: false,
     webPreferences: {
@@ -129,11 +129,11 @@ function createTray(): void {
   const icon = nativeImage.createFromBuffer(iconBuffer);
 
   tray = new Tray(icon);
-  tray.setToolTip('JARVIS Windows Assistant');
+  tray.setToolTip('SARVIS Windows Assistant');
 
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: 'Open JARVIS',
+      label: 'Open SARVIS',
       click: () => {
         mainWindow?.show();
         mainWindow?.focus();
@@ -148,7 +148,7 @@ function createTray(): void {
     },
     { type: 'separator' },
     {
-      label: 'Quit JARVIS',
+      label: 'Quit SARVIS',
       click: () => {
         (app as any).isQuitting = true;
         app.quit();
@@ -165,7 +165,7 @@ function createTray(): void {
 
 function registerIpc(): void {
   ipcMain.handle('brain:hear', async (_event: Electron.IpcMainInvokeEvent, utterance: string) => {
-    if (!jarvisBrain) return { reply: 'JARVIS brain initializing...' };
+    if (!jarvisBrain) return { reply: 'SARVIS brain initializing...' };
     return await jarvisBrain.hear(utterance);
   });
 

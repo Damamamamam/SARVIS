@@ -1,10 +1,10 @@
 /**
- * Local WebSocket bridge. The brain is the server; the Android app is the client.
+ * Local WebSocket bridge. The brain is the server; the Windows client is the client.
  */
 import { WebSocketServer, type WebSocket } from 'ws';
 import { createServer, type Server as HttpServer } from 'node:http';
 import type { AckEnvelope, CommandEnvelope, DeviceCommand, Transport } from '../services/device_control.js';
-import { toAndroidDevicePayload } from '../protocol/android_payload.js';
+import { toClientDevicePayload } from '../protocol/client_payload.js';
 
 export interface BridgeMessage {
   id: string;
@@ -35,7 +35,7 @@ export class BrainBridge implements Transport {
   async listen(): Promise<void> {
     this.http = createServer((_req, res) => {
       res.writeHead(200, { 'content-type': 'text/plain' });
-      res.end('JARVIS brain bridge\n');
+      res.end('SARVIS brain bridge\n');
     });
     this.wss = new WebSocketServer({ server: this.http });
     this.wss.on('connection', (ws) => {
@@ -56,7 +56,7 @@ export class BrainBridge implements Transport {
       type: envelope.type,
       module: envelope.module,
       ts: envelope.ts,
-      payload: toAndroidDevicePayload(envelope.payload as DeviceCommand),
+      payload: toClientDevicePayload(envelope.payload as DeviceCommand),
     };
     const text = JSON.stringify(wire);
     for (const ws of this.clients) {

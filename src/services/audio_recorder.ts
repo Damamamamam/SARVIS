@@ -1,13 +1,13 @@
 /**
  * AmbientAudioRecorder — rolling-buffer audio capture with irrevocable kill switch.
  *
- * Design invariants (see docs/architecture.md §4.3):
+ * Design invariants:
  *  - Rolling circular buffer: N chunks of `chunkMs`, retaining at most `windowMs`.
  *  - Kill switch is a HARD stop: zeroes all buffer memory, releases the mic
  *    handle, and cannot return to RECORDING without an explicit rearm().
  *  - No audio is ever persisted to disk (memory-only buffer).
  *
- * This is the brain-side controller. On Android the real MediaRecorder/AudioRecord
+ * This is the brain-side controller. On Windows the real NAudio capture
  * feeds PCM chunks via pushChunk(); in Node/TS it is driven by tests/mocks.
  */
 import { EventEmitter } from 'node:events';

@@ -1,8 +1,8 @@
 @echo off
-REM JARVIS Windows Desktop Build Script
+REM SARVIS Windows Desktop Build Script
 
 echo ====================================
-echo JARVIS Windows App Build Script
+echo SARVIS Windows App Build Script
 echo ====================================
 echo.
 
@@ -37,7 +37,7 @@ echo ====================================
 echo Build Complete!
 echo ====================================
 echo.
-echo To launch the JARVIS Windows App:
+echo To launch the SARVIS Windows App:
 echo   npm run dev   (or start-brain.bat)
 echo.
 echo To package as a standalone Windows .exe installer:

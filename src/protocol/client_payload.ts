@@ -1,13 +1,13 @@
 /**
- * Maps TS DeviceCommand objects to the flat JSON the Android bridge understands.
- * Both current Kotlin field names and TS names are included so either side can
+ * Maps TS DeviceCommand objects to the flat JSON the client bridge understands.
+ * Both current Windows field names and TS names are included so either side can
  * finish catching up without breaking the other.
  */
 import type { DeviceCommand } from '../services/device_control.js';
 
-export type AndroidDevicePayload = Record<string, unknown> & { action: string };
+export type ClientDevicePayload = Record<string, unknown> & { action: string };
 
-export function toAndroidDevicePayload(command: DeviceCommand): AndroidDevicePayload {
+export function toClientDevicePayload(command: DeviceCommand): ClientDevicePayload {
   switch (command.action) {
     case 'launchApp':
     case 'closeApp':
@@ -80,7 +80,7 @@ export function toAndroidDevicePayload(command: DeviceCommand): AndroidDevicePay
   }
 }
 
-function flattenToggle(target: string): AndroidDevicePayload {
+function flattenToggle(target: string): ClientDevicePayload {
   if (target === 'flashlight') {
     return { action: 'flashlight', enable: true, target };
   }

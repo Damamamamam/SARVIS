@@ -1,19 +1,19 @@
 /**
  * OwnerTalkDetector — front-camera talk-state classifier (Module D).
  *
- * Design invariants (see docs/architecture.md §4.4):
- *  - Output is one of TalkState: TALKING_TO_JARVIS | ROOM_CONVERSATION | NO_FACE.
+ * Design invariants:
+ *  - Output is one of TalkState: TALKING_TO_SARVIS | ROOM_CONVERSATION | NO_FACE.
  *  - Pipeline: face → gaze(yaw) → lip(MAR) movement → classification.
  *  - MAR = vertical_dist(13,14) / horizontal_dist(61,291); stddev over a
  *    sliding window of frames gates "mouth moving".
  *
- * Landmark inference (MediaPipe FaceMesh) runs on-device in the Android/Kotlin
+ * Landmark inference (MediaPipe FaceMesh) runs on-device in the Windows client
  * layer; this controller accepts normalized landmarks so it is unit-testable
  * via MockFaceMesh fixtures without any native dependency.
  */
 import { EventEmitter } from 'node:events';
 
-export type TalkState = 'TALKING_TO_JARVIS' | 'ROOM_CONVERSATION' | 'NO_FACE';
+export type TalkState = 'TALKING_TO_SARVIS' | 'ROOM_CONVERSATION' | 'NO_FACE';
 
 export interface FaceLandmarks {
   /** inner-lip upper point (FaceMesh 13) */
@@ -106,8 +106,8 @@ export class OwnerTalkDetector {
   private classify(mar: number, moving: boolean, facing: boolean): TalkState {
     if (mar === 0 && !moving) return 'NO_FACE';
     if (!facing) return 'ROOM_CONVERSATION';
-    if (moving) return 'TALKING_TO_JARVIS';
-    if (mar >= this.mouthOpenRatio) return 'TALKING_TO_JARVIS';
+    if (moving) return 'TALKING_TO_SARVIS';
+    if (mar >= this.mouthOpenRatio) return 'TALKING_TO_SARVIS';
     return 'ROOM_CONVERSATION';
   }
 

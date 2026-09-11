@@ -10,12 +10,12 @@ test('null landmarks => NO_FACE', () => {
   assert.equal(d.processFrame(null), 'NO_FACE');
 });
 
-test('facing lens + mouth moving => TALKING_TO_JARVIS', () => {
+test('facing lens + mouth moving => TALKING_TO_SARVIS', () => {
   const d = new OwnerTalkDetector({ now: () => 0 });
   const mesh = new MockFaceMesh({ yawDeg: 0, mar: 0.35, moving: true });
   let state = 'NO_FACE';
   for (let i = 0; i < 12; i++) state = d.processFrame(mesh.frame());
-  assert.equal(state, 'TALKING_TO_JARVIS');
+  assert.equal(state, 'TALKING_TO_SARVIS');
 });
 
 test('looking away (yaw > tolerance) => ROOM_CONVERSATION even if moving', () => {
@@ -39,7 +39,7 @@ test('gaze tolerance boundary at exactly threshold counts as facing', () => {
   const mesh = new MockFaceMesh({ yawDeg: 30, mar: 0.4, moving: true });
   let state = 'NO_FACE';
   for (let i = 0; i < 12; i++) state = d.processFrame(mesh.frame());
-  assert.equal(state, 'TALKING_TO_JARVIS');
+  assert.equal(state, 'TALKING_TO_SARVIS');
 });
 
 test('emits state change events', () => {
