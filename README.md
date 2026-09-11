@@ -18,33 +18,31 @@ SARVIS is a Windows desktop assistant with a Node.js/TypeScript brain and .NET 8
 
 ## 🚀 Quick Start
 
-### 1. Start the Brain
+### 1. Start Desktop Application (GUI with Setup Wizard)
 
 ```powershell
 cd "C:\Users\give it back\OneDrive\Desktop\NVMUN\brain"
 npm run build
+npm run gui
+```
+
+> **First-Time Setup**: On initial launch, SARVIS presents a setup wizard asking for your API keys. A **Google Gemini API Key is required**; the other 7 provider keys are optional. Keys can be reconfigured at any time via the **Settings > API Keys** tab.
+
+### 2. Alternative: Headless Server Mode
+
+```powershell
 npm run start:server
 ```
 
-The brain will start on `ws://localhost:9741`. With no API keys, it runs in degraded mode.
+The brain starts a standalone WebSocket server on `ws://localhost:9741`.
 
-### 2. Start the Windows Client
+### 3. Windows Native Client (.NET)
 
 ```powershell
-cd "C:\Users\give it back\OneDrive\Desktop\NVMUN\brain\windows\JarvisWindows"
+cd "windows\JarvisWindows"
 $env:PATH = "C:\Users\give it back\AppData\Local\Microsoft\dotnet;$env:PATH"
 dotnet run
 ```
-
-### 3. Configure API Keys (Optional)
-
-```powershell
-$env:SARVIS_GEMINI_API_KEY="your-key"
-$env:SARVIS_GROQ_API_KEY="your-key"
-# ... up to 8 providers
-```
-
-Then restart the brain.
 
 ## 🧪 Testing
 
@@ -65,20 +63,21 @@ npm run test:vision
 brain/
 ├── src/
 │   ├── agent/           # Main brain orchestration
-│   ├── config/         # Environment key loader
-│   ├── server/         # WebSocket server and bridge
-│   ├── services/       # Core services (rotator, device_control, audio_recorder, etc.)
-│   ├── tools/          # Free web tools (weather, wikipedia, news, search, etc.)
-│   └── ui/             # Legacy Electron UI (deprecated)
+│   ├── config/          # Environment key loader & config
+│   ├── electron/        # Electron main process & IPC bridge
+│   ├── server/          # WebSocket server and bridge
+│   ├── services/        # Core services (rotator, device_control, audio_recorder, etc.)
+│   ├── tools/           # Free web tools (weather, wikipedia, news, search, etc.)
+│   └── ui/              # Desktop GUI (HTML5, CSS3 glassmorphism, vanilla JS)
 ├── windows/
-│   └── JarvisWindows/  # .NET Windows client
+│   └── JarvisWindows/   # .NET Windows client
 │       ├── BrainClient.cs      # WebSocket client
 │       ├── AudioCapture.cs     # NAudio capture
 │       ├── VoiceServices.cs    # Windows Speech API
 │       ├── WindowAutomation.cs  # Windows API automation
 │       ├── SecureStorage.cs    # DPAPI encryption
 │       └── Program.cs          # Main application
-├── test/               # Unit tests
+├── test/                # Unit tests
 └── package.json
 ```
 
@@ -88,10 +87,6 @@ brain/
 - **s** - Speak text (interactive TTS)
 - **h** - Show help
 - **[any text]** - Send text to brain for processing
-
-## 📄 License
-
-Private project - All rights reserved
 
 ## 📄 License
 

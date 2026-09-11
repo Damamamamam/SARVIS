@@ -10,7 +10,130 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="dark-theme">
-  <div class="app-container">
+  <!-- ========== FIRST-RUN SETUP WIZARD ========== -->
+  <div class="setup-wizard-overlay" id="setupWizard">
+    <div class="setup-bg-anim"></div>
+    <div class="setup-card">
+      <div class="setup-header">
+        <div class="setup-logo">
+          <div class="setup-logo-ring">
+            <div class="setup-logo-core"></div>
+          </div>
+        </div>
+        <h1 class="setup-title">Welcome to <span class="setup-brand">SARVIS</span></h1>
+        <p class="setup-subtitle">Configure your AI providers to get started. You can always change these later.</p>
+      </div>
+
+      <form class="setup-form" id="setupForm">
+        <!-- Gemini — REQUIRED -->
+        <div class="setup-field required" id="setupFieldGemini">
+          <div class="setup-field-header">
+            <div class="setup-field-info">
+              <span class="setup-provider-name">Google Gemini <span class="setup-badge-required">REQUIRED</span></span>
+              <span class="setup-provider-model">Flash 2.5 — Primary intelligence engine</span>
+            </div>
+            <a href="https://makersuite.google.com/app/apikey" target="_blank" class="setup-get-key" title="Get your Gemini API key">Get Key →</a>
+          </div>
+          <input type="password" id="setup_SARVIS_GEMINI_API_KEY" placeholder="AIzaSy..." autocomplete="off" required>
+          <span class="setup-field-error" id="geminiError">Gemini API key is required to continue</span>
+        </div>
+
+        <!-- Groq — optional -->
+        <div class="setup-field">
+          <div class="setup-field-header">
+            <div class="setup-field-info">
+              <span class="setup-provider-name">Groq <span class="setup-badge-optional">OPTIONAL</span></span>
+              <span class="setup-provider-model">Llama 3.1 8B — Ultra-fast inference</span>
+            </div>
+            <a href="https://console.groq.com/keys" target="_blank" class="setup-get-key">Get Key →</a>
+          </div>
+          <input type="password" id="setup_SARVIS_GROQ_API_KEY" placeholder="gsk_..." autocomplete="off">
+        </div>
+
+        <!-- OpenRouter — optional -->
+        <div class="setup-field">
+          <div class="setup-field-header">
+            <div class="setup-field-info">
+              <span class="setup-provider-name">OpenRouter <span class="setup-badge-optional">OPTIONAL</span></span>
+              <span class="setup-provider-model">Auto model selection — Best of many</span>
+            </div>
+            <a href="https://openrouter.ai/keys" target="_blank" class="setup-get-key">Get Key →</a>
+          </div>
+          <input type="password" id="setup_SARVIS_OPENROUTER_API_KEY" placeholder="sk-or-v1-..." autocomplete="off">
+        </div>
+
+        <!-- Cerebras — optional -->
+        <div class="setup-field">
+          <div class="setup-field-header">
+            <div class="setup-field-info">
+              <span class="setup-provider-name">Cerebras <span class="setup-badge-optional">OPTIONAL</span></span>
+              <span class="setup-provider-model">Llama 3.1 8B — Hardware-accelerated</span>
+            </div>
+            <a href="https://inference.cerebras.ai/" target="_blank" class="setup-get-key">Get Key →</a>
+          </div>
+          <input type="password" id="setup_SARVIS_CEREBRAS_API_KEY" placeholder="csk-..." autocomplete="off">
+        </div>
+
+        <!-- Mistral — optional -->
+        <div class="setup-field">
+          <div class="setup-field-header">
+            <div class="setup-field-info">
+              <span class="setup-provider-name">Mistral <span class="setup-badge-optional">OPTIONAL</span></span>
+              <span class="setup-provider-model">Mistral Small — Efficient reasoning</span>
+            </div>
+            <a href="https://console.mistral.ai/" target="_blank" class="setup-get-key">Get Key →</a>
+          </div>
+          <input type="password" id="setup_SARVIS_MISTRAL_API_KEY" placeholder="..." autocomplete="off">
+        </div>
+
+        <!-- Together AI — optional -->
+        <div class="setup-field">
+          <div class="setup-field-header">
+            <div class="setup-field-info">
+              <span class="setup-provider-name">Together AI <span class="setup-badge-optional">OPTIONAL</span></span>
+              <span class="setup-provider-model">Llama 3.1 8B Instruct Turbo</span>
+            </div>
+            <a href="https://api.together.xyz/" target="_blank" class="setup-get-key">Get Key →</a>
+          </div>
+          <input type="password" id="setup_SARVIS_TOGETHER_API_KEY" placeholder="..." autocomplete="off">
+        </div>
+
+        <!-- Cohere — optional -->
+        <div class="setup-field">
+          <div class="setup-field-header">
+            <div class="setup-field-info">
+              <span class="setup-provider-name">Cohere <span class="setup-badge-optional">OPTIONAL</span></span>
+              <span class="setup-provider-model">Command R — Retrieval-optimized</span>
+            </div>
+            <a href="https://dashboard.cohere.ai/" target="_blank" class="setup-get-key">Get Key →</a>
+          </div>
+          <input type="password" id="setup_SARVIS_COHERE_API_KEY" placeholder="..." autocomplete="off">
+        </div>
+
+        <!-- DeepSeek — optional -->
+        <div class="setup-field">
+          <div class="setup-field-header">
+            <div class="setup-field-info">
+              <span class="setup-provider-name">DeepSeek <span class="setup-badge-optional">OPTIONAL</span></span>
+              <span class="setup-provider-model">DeepSeek Chat — Deep reasoning</span>
+            </div>
+            <a href="https://platform.deepseek.com/" target="_blank" class="setup-get-key">Get Key →</a>
+          </div>
+          <input type="password" id="setup_SARVIS_DEEPSEEK_API_KEY" placeholder="sk-..." autocomplete="off">
+        </div>
+
+        <div class="setup-actions">
+          <button type="submit" class="setup-submit-btn" id="setupSubmitBtn" disabled>
+            <span class="setup-submit-text">Save &amp; Launch SARVIS</span>
+            <svg class="setup-submit-arrow" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+          </button>
+          <p class="setup-hint">Your keys are stored locally and never sent anywhere except the provider's own API.</p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="app-container" id="appContainer">
     <!-- Window Header / Title Bar -->
     <header class="app-header">
       <div class="header-brand">
@@ -180,6 +303,10 @@
           <div class="panel-header">
             <h2>API Key Management</h2>
             <p>Configure your 8 provider API keys. At least one key is recommended for full AI capabilities.</p>
+            <button type="button" class="btn accent setup-reopen-btn" id="btnReconfigureKeys" style="margin-top:12px;">
+              <svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:middle;margin-right:6px;"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+              Reconfigure API Keys
+            </button>
           </div>
           <form class="keys-form" id="keysForm">
             <div class="key-field">

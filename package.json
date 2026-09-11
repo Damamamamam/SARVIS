@@ -10,6 +10,8 @@
     "copy-ui": "node -e \"const fs = require('fs'); fs.mkdirSync('dist/src/ui', { recursive: true }); fs.copyFileSync('src/ui/index.html', 'dist/src/ui/index.html'); fs.copyFileSync('src/ui/styles.css', 'dist/src/ui/styles.css'); fs.copyFileSync('src/ui/app.js', 'dist/src/ui/app.js');\"",
     "start": "node dist/src/server/index.js",
     "start:server": "node dist/src/server/index.js",
+    "gui": "electron dist/src/electron/main.js",
+    "start:gui": "npm run build && electron dist/src/electron/main.js",
     "dev": "npm run build && node dist/src/server/index.js",
     "test": "tsc && node --test dist/test/*.test.js",
     "test:rotator": "tsc && node --test dist/test/api_rotator.test.js",
@@ -24,6 +26,7 @@
   "devDependencies": {
     "@types/node": "^24.0.0",
     "@types/ws": "^8.18.1",
+    "electron": "^31.7.7",
     "typescript": "^5.5.0"
   }
 }

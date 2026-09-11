@@ -9,6 +9,38 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
+/** Path to the persistent config file that tracks first-run state. */
+function getConfigFilePath(): string {
+  return path.join(app.getPath('userData'), 'config.json');
+}
+
+function readConfig(): Record<string, unknown> {
+  const p = getConfigFilePath();
+  if (!fs.existsSync(p)) return {};
+  try {
+    return JSON.parse(fs.readFileSync(p, 'utf-8'));
+  } catch {
+    return {};
+  }
+}
+
+function writeConfig(data: Record<string, unknown>): void {
+  const p = getConfigFilePath();
+  fs.mkdirSync(path.dirname(p), { recursive: true });
+  fs.writeFileSync(p, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+function isFirstRun(): boolean {
+  const cfg = readConfig();
+  return cfg.setupComplete !== true;
+}
+
+function markSetupComplete(): void {
+  const cfg = readConfig();
+  cfg.setupComplete = true;
+  writeConfig(cfg);
+}
+
 import { JarvisBrain } from '../agent/brain.js';
 import { loadKeysFromEnv } from '../config/load_keys.js';
 import { WinControlService } from '../services/win_control.js';
@@ -111,6 +143,8 @@ function createWindow(): void {
 
   mainWindow.once('ready-to-show', () => {
     mainWindow?.show();
+    // Tell the renderer whether this is the first run so it can show the wizard
+    mainWindow?.webContents.send('app:first-run-state', isFirstRun());
   });
 
   mainWindow.on('close', (event: Electron.Event) => {
@@ -189,6 +223,15 @@ function registerIpc(): void {
     updateEnvFile(envPath, updates);
     // Re-initialize JarvisBrain with updated keys
     initJarvis();
+    return { success: true };
+  });
+
+  ipcMain.handle('config:is-first-run', () => {
+    return isFirstRun();
+  });
+
+  ipcMain.handle('config:complete-setup', () => {
+    markSetupComplete();
     return { success: true };
   });
 

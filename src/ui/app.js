@@ -2,7 +2,140 @@
  * SARVIS Windows Desktop - Frontend Client Application
  */
 document.addEventListener('DOMContentLoaded', async () => {
-  // Navigation Tabs
+
+  // =============================================
+  // SETUP WIZARD LOGIC
+  // =============================================
+  const setupWizard = document.getElementById('setupWizard');
+  const setupForm = document.getElementById('setupForm');
+  const setupSubmitBtn = document.getElementById('setupSubmitBtn');
+  const geminiInput = document.getElementById('setup_SARVIS_GEMINI_API_KEY');
+  const geminiField = document.getElementById('setupFieldGemini');
+  const appContainer = document.getElementById('appContainer');
+
+  const SETUP_KEY_IDS = [
+    'SARVIS_GEMINI_API_KEY',
+    'SARVIS_GROQ_API_KEY',
+    'SARVIS_OPENROUTER_API_KEY',
+    'SARVIS_CEREBRAS_API_KEY',
+    'SARVIS_MISTRAL_API_KEY',
+    'SARVIS_TOGETHER_API_KEY',
+    'SARVIS_COHERE_API_KEY',
+    'SARVIS_DEEPSEEK_API_KEY',
+  ];
+
+  /** Show the wizard overlay. If prefill=true, loads existing keys into wizard fields. */
+  async function showSetupWizard(prefill = false) {
+    if (prefill && window.jarvisAPI) {
+      try {
+        const currentKeys = await window.jarvisAPI.loadKeys();
+        SETUP_KEY_IDS.forEach(id => {
+          const el = document.getElementById('setup_' + id);
+          if (el && currentKeys[id] && currentKeys[id] !== `your_${id.toLowerCase().replace('sarvis_', '')}_here`) {
+            el.value = currentKeys[id];
+          }
+        });
+        validateGeminiField();
+      } catch { /* ignore load errors */ }
+    }
+    setupWizard?.classList.add('visible');
+    setupWizard?.classList.remove('exiting');
+    appContainer?.classList.add('hidden-by-wizard');
+  }
+
+  /** Animate the wizard out and reveal the main app. */
+  function hideSetupWizard() {
+    if (!setupWizard) return;
+    setupWizard.classList.add('exiting');
+    appContainer?.classList.remove('hidden-by-wizard');
+    setTimeout(() => {
+      setupWizard.classList.remove('visible', 'exiting');
+    }, 500);
+  }
+
+  /** Validate the Gemini field and toggle the submit button state. */
+  function validateGeminiField() {
+    const val = geminiInput?.value?.trim() ?? '';
+    if (val.length > 0) {
+      geminiField?.classList.remove('error');
+      geminiField?.classList.add('valid');
+      if (setupSubmitBtn) setupSubmitBtn.disabled = false;
+    } else {
+      geminiField?.classList.remove('valid');
+      // Don't show error state until user has tried to submit
+      if (setupSubmitBtn) setupSubmitBtn.disabled = true;
+    }
+  }
+
+  geminiInput?.addEventListener('input', validateGeminiField);
+
+  // Setup form submission
+  setupForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const geminiVal = geminiInput?.value?.trim() ?? '';
+    if (!geminiVal) {
+      geminiField?.classList.add('error');
+      geminiField?.classList.remove('valid');
+      geminiInput?.focus();
+      return;
+    }
+
+    // Collect all keys
+    const updates = {};
+    SETUP_KEY_IDS.forEach(id => {
+      const el = document.getElementById('setup_' + id);
+      if (el && el.value.trim()) {
+        updates[id] = el.value.trim();
+      }
+    });
+
+    // Save keys and mark setup complete
+    if (window.jarvisAPI) {
+      try {
+        await window.jarvisAPI.saveKeys(updates);
+        await window.jarvisAPI.completeSetup();
+      } catch (err) {
+        console.error('Setup save failed', err);
+      }
+    }
+
+    // Also update the settings form on the main page
+    SETUP_KEY_IDS.forEach(id => {
+      const mainInput = document.getElementById(id);
+      const setupInput = document.getElementById('setup_' + id);
+      if (mainInput && setupInput) {
+        mainInput.value = setupInput.value;
+      }
+    });
+
+    hideSetupWizard();
+  });
+
+  // Check first-run state on load
+  if (window.jarvisAPI) {
+    // Method 1: Listen for the main process event (sent on ready-to-show)
+    window.jarvisAPI.onFirstRunState?.((isFirst) => {
+      if (isFirst) showSetupWizard(false);
+    });
+
+    // Method 2: Proactive check (fallback if event already fired)
+    try {
+      const isFirst = await window.jarvisAPI.isFirstRun();
+      if (isFirst && !setupWizard?.classList.contains('visible')) {
+        showSetupWizard(false);
+      }
+    } catch { /* ignore */ }
+  }
+
+  // "Reconfigure API Keys" button in Settings tab
+  document.getElementById('btnReconfigureKeys')?.addEventListener('click', () => {
+    showSetupWizard(true);
+  });
+
+  // =============================================
+  // NAVIGATION TABS
+  // =============================================
   const navItems = document.querySelectorAll('.nav-item');
   const viewPanels = document.querySelectorAll('.view-panel');
 

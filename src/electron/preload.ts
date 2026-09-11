@@ -12,7 +12,12 @@ contextBridge.exposeInMainWorld('jarvisAPI', {
   getActiveWindow: () => ipcRenderer.invoke('win:get-active-app'),
   minimizeToTray: () => ipcRenderer.send('app:minimize-to-tray'),
   closeApp: () => ipcRenderer.send('app:close'),
+  isFirstRun: () => ipcRenderer.invoke('config:is-first-run'),
+  completeSetup: () => ipcRenderer.invoke('config:complete-setup'),
   onNudge: (callback: (nudge: any) => void) => {
     ipcRenderer.on('brain:nudge', (_event: Electron.IpcRendererEvent, value: any) => callback(value));
+  },
+  onFirstRunState: (callback: (isFirst: boolean) => void) => {
+    ipcRenderer.on('app:first-run-state', (_event: Electron.IpcRendererEvent, value: boolean) => callback(value));
   },
 });

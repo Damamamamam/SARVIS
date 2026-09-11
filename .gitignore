@@ -8,6 +8,8 @@ yarn-error.log*
 dist/
 out/
 build/
+bin/
+obj/
 
 # Environment and sensitive keys
 .env
