@@ -1,0 +1,9 @@
+﻿
+electron.exe : APIRotatorService: no keys provided, running in degraded mode without LLM
+At line:1 char:1
++ & "c:\Users\give it back\OneDrive\Desktop\NVMUN\brain\node_modules\el ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (APIRotatorServi...ode without LLM:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+APIRotatorService: no keys provided, running in degraded mode without LLM

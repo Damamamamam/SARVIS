@@ -1,0 +1,9 @@
+{
+  "promptDelete": false,
+  "newFileLocation": "current",
+  "attachmentFolderPath": "attachments",
+  "alwaysUpdateLinks": true,
+  "useMarkdownLinks": true,
+  "showInlineTitle": true,
+  "livePreview": true
+}

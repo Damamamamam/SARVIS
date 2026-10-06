@@ -50,6 +50,8 @@ $env:PATH = "C:\Users\give it back\AppData\Local\Microsoft\dotnet;$env:PATH"
 dotnet run
 ```
 
+The WPF GUI will open with a modern dark theme interface.
+
 ### 3. Configure API Keys (Optional)
 
 To enable full LLM intelligence, configure API keys in the environment:
