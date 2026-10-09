@@ -42,41 +42,26 @@ if not exist .env (
     )
 )
 
-REM Install dependencies if needed
-if not exist node_modules (
-    echo Installing Node.js dependencies...
-    call npm install
-    if %ERRORLEVEL% NEQ 0 (
-        echo ERROR: npm install failed
-        pause
-        exit /b 1
-    )
+REM Build TypeScript
+echo Building TypeScript...
+call npm run build
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: TypeScript build failed
+    pause
+    exit /b 1
 )
 
-REM Build TypeScript if needed
-if not exist dist (
-    echo Building TypeScript...
-    call npm run build
-    if %ERRORLEVEL% NEQ 0 (
-        echo ERROR: TypeScript build failed
-        pause
-        exit /b 1
-    )
-)
-
-REM Build Windows client if needed
-if not exist windows\JarvisWindows\bin\Debug\net10.-windows\JarvisWindows.exe (
-    echo Building Windows client...
-    cd windows\JarvisWindows
-    call dotnet build
-    if %ERRORLEVEL% NEQ 0 (
-        echo ERROR: Windows client build failed
-        cd ..\..
-        pause
-        exit /b 1
-    )
+REM Build Windows client
+echo Building Windows client...
+cd windows\JarvisWindows
+call dotnet build
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: Windows client build failed
     cd ..\..
+    pause
+    exit /b 1
 )
+cd ..\..
 
 echo.
 echo ====================================
@@ -86,7 +71,7 @@ echo.
 
 REM Start Brain server in background
 echo [1/2] Starting Brain server on localhost:9741...
-start "SARVIS Brain Server" cmd /c "npm run start:server && pause"
+start "SARVIS Brain Server" cmd /k "npm run start:server"
 
 REM Wait for Brain server to initialize
 echo Waiting for Brain server to initialize...
