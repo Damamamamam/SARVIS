@@ -1,0 +1,115 @@
+<Window x:Class="JarvisWindows.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="SARVIS - Settings &amp; Configuration" Height="640" Width="680"
+        WindowStartupLocation="CenterOwner"
+        Background="#1e1e1e" Foreground="White" ResizeMode="NoResize">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Margin="0,0,0,15">
+            <StackPanel>
+                <TextBlock Text="Settings &amp; Configuration" FontSize="20" FontWeight="Bold" Foreground="#00ffcc"/>
+                <TextBlock Text="Configure Brain connectivity, AI Provider API keys, and Assistant features." Foreground="#888" Margin="0,4,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Tabs -->
+        <TabControl Grid.Row="1" Background="#252525" BorderBrush="#3d3d3d">
+            <TabControl.Resources>
+                <Style TargetType="TabItem">
+                    <Setter Property="Background" Value="#2d2d2d"/>
+                    <Setter Property="Foreground" Value="#aaa"/>
+                    <Setter Property="Padding" Value="14,8"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Foreground" Value="#00ffcc"/>
+                            <Setter Property="FontWeight" Value="SemiBold"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </TabControl.Resources>
+
+            <!-- API Keys Tab -->
+            <TabItem Header="API Keys (Rotator)">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="10">
+                    <StackPanel>
+                        <TextBlock Text="Google Gemini (Primary / Required):" Foreground="#ccc" Margin="0,5,0,2"/>
+                        <PasswordBox x:Name="GeminiKeyBox" Background="#2d2d2d" Foreground="White" BorderBrush="#3d3d3d" Padding="6"/>
+
+                        <TextBlock Text="Groq Key:" Foreground="#ccc" Margin="0,10,0,2"/>
+                        <PasswordBox x:Name="GroqKeyBox" Background="#2d2d2d" Foreground="White" BorderBrush="#3d3d3d" Padding="6"/>
+
+                        <TextBlock Text="OpenRouter Key:" Foreground="#ccc" Margin="0,10,0,2"/>
+                        <PasswordBox x:Name="OpenRouterKeyBox" Background="#2d2d2d" Foreground="White" BorderBrush="#3d3d3d" Padding="6"/>
+
+                        <TextBlock Text="Mistral Key:" Foreground="#ccc" Margin="0,10,0,2"/>
+                        <PasswordBox x:Name="MistralKeyBox" Background="#2d2d2d" Foreground="White" BorderBrush="#3d3d3d" Padding="6"/>
+
+                        <TextBlock Text="Cerebras Key:" Foreground="#ccc" Margin="0,10,0,2"/>
+                        <PasswordBox x:Name="CerebrasKeyBox" Background="#2d2d2d" Foreground="White" BorderBrush="#3d3d3d" Padding="6"/>
+
+                        <TextBlock Text="Together AI Key:" Foreground="#ccc" Margin="0,10,0,2"/>
+                        <PasswordBox x:Name="TogetherKeyBox" Background="#2d2d2d" Foreground="White" BorderBrush="#3d3d3d" Padding="6"/>
+
+                        <TextBlock Text="Cohere Key:" Foreground="#ccc" Margin="0,10,0,2"/>
+                        <PasswordBox x:Name="CohereKeyBox" Background="#2d2d2d" Foreground="White" BorderBrush="#3d3d3d" Padding="6"/>
+
+                        <TextBlock Text="DeepSeek Key:" Foreground="#ccc" Margin="0,10,0,2"/>
+                        <PasswordBox x:Name="DeepSeekKeyBox" Background="#2d2d2d" Foreground="White" BorderBrush="#3d3d3d" Padding="6"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Network & Brain Tab -->
+            <TabItem Header="Brain Connection">
+                <StackPanel Margin="15">
+                    <TextBlock Text="Brain WebSocket Server URL:" Foreground="#ccc" Margin="0,0,0,5"/>
+                    <TextBox x:Name="BrainUrlBox" Text="ws://localhost:9741" Background="#2d2d2d" Foreground="White" BorderBrush="#3d3d3d" Padding="8"/>
+
+                    <TextBlock Text="Connection Retry Timeout (Seconds):" Foreground="#ccc" Margin="0,15,0,5"/>
+                    <TextBox x:Name="RetryTimeoutBox" Text="5" Background="#2d2d2d" Foreground="White" BorderBrush="#3d3d3d" Padding="8"/>
+
+                    <CheckBox x:Name="AutoReconnectCheck" Content="Enable Auto-Reconnect on disconnect" IsChecked="True" Foreground="#ccc" Margin="0,15,0,0"/>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Vision & Voice Tab -->
+            <TabItem Header="Voice &amp; Vision">
+                <StackPanel Margin="15">
+                    <CheckBox x:Name="CameraTrackingCheck" Content="Enable Camera Face Landmark Vision Tracking" IsChecked="True" Foreground="#ccc" Margin="0,5,0,10"/>
+                    <CheckBox x:Name="ContinuousSttCheck" Content="Enable Continuous Speech Recognition (STT)" IsChecked="True" Foreground="#ccc" Margin="0,5,0,10"/>
+                    <CheckBox x:Name="ScreenTimeGuardCheck" Content="Enable Screen Time Monitoring &amp; Doomscroll Alerts" IsChecked="True" Foreground="#ccc" Margin="0,5,0,10"/>
+
+                    <TextBlock Text="Speech Recognition Language (Culture):" Foreground="#ccc" Margin="0,10,0,5"/>
+                    <ComboBox x:Name="LanguageCombo" Background="#2d2d2d" Foreground="White" Padding="6">
+                        <ComboBoxItem Content="en-US" IsSelected="True"/>
+                        <ComboBoxItem Content="en-GB"/>
+                        <ComboBoxItem Content="en-IN"/>
+                    </ComboBox>
+
+                    <TextBlock Text="Doomscroll Alert Threshold (minutes):" Foreground="#ccc" Margin="0,15,0,5"/>
+                    <TextBox x:Name="DoomscrollMinsBox" Text="25" Background="#2d2d2d" Foreground="White" BorderBrush="#3d3d3d" Padding="8"/>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+
+        <!-- Footer Buttons -->
+        <Grid Grid.Row="2" Margin="0,15,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <TextBlock x:Name="StatusMessage" Text="" Foreground="#ff4444" VerticalAlignment="Center" Margin="0,0,0,8" TextWrapping="Wrap"/>
+            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Save &amp; Apply" Width="120" Height="36" Background="#00ffcc" Foreground="#1e1e1e" FontWeight="Bold" BorderThickness="0" Margin="0,0,10,0" Click="SaveButton_Click"/>
+                <Button Content="Cancel" Width="90" Height="36" Background="#3d3d3d" Foreground="White" BorderThickness="0" Click="CancelButton_Click"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

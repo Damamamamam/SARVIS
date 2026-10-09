@@ -1,13 +1,15 @@
 using System;
-using System.Text;
-using Microsoft.Win32;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Text.RegularExpressions;
+using Microsoft.Win32;
 
 namespace JarvisWindows;
 
 public class SecureStorage
 {
-    private static readonly byte[] _entropy = Encoding.UTF8.GetBytes("SARVIS_SECURE_STORAGE_SALT");
+    private static readonly byte[] _entropy = Encoding.UTF8.GetBytes("SARVIS_SECURE_STORAGE_SALT_2026");
 
     [DllImport("crypt32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     private static extern bool CryptProtectData(
@@ -22,7 +24,7 @@ public class SecureStorage
     [DllImport("crypt32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     private static extern bool CryptUnprotectData(
         ref DATA_BLOB pDataIn,
-        StringBuilder szDataDescr,
+        IntPtr szDataDescr,
         ref DATA_BLOB pOptionalEntropy,
         IntPtr pvReserved,
         IntPtr pPromptStruct,
@@ -34,6 +36,30 @@ public class SecureStorage
     {
         public int cbData;
         public IntPtr pbData;
+    }
+
+    public static bool ValidateApiKey(string provider, string key)
+    {
+        if (string.IsNullOrWhiteSpace(key)) return false;
+        var trimmed = key.Trim();
+
+        switch (provider.ToLowerInvariant())
+        {
+            case "gemini":
+                return trimmed.Length >= 25 && (trimmed.StartsWith("AIzaSy") || trimmed.Length >= 35);
+            case "groq":
+                return trimmed.StartsWith("gsk_") && trimmed.Length >= 30;
+            case "openrouter":
+                return trimmed.StartsWith("sk-or-") && trimmed.Length >= 30;
+            case "mistral":
+            case "cerebras":
+            case "together":
+            case "cohere":
+            case "deepseek":
+                return trimmed.Length >= 20;
+            default:
+                return trimmed.Length >= 10;
+        }
     }
 
     public static void SaveSecureValue(string key, string value)
@@ -81,6 +107,21 @@ public class SecureStorage
         }
     }
 
+    public static Dictionary<string, string> LoadAllConfiguredKeys()
+    {
+        var result = new Dictionary<string, string>();
+        string[] providers = ["gemini", "groq", "openrouter", "mistral", "cerebras", "together", "cohere", "deepseek"];
+        foreach (var p in providers)
+        {
+            var val = LoadSecureValue($"API_KEY_{p.ToUpperInvariant()}");
+            if (!string.IsNullOrEmpty(val))
+            {
+                result[p] = val;
+            }
+        }
+        return result;
+    }
+
     private static string EncryptString(string plainText)
     {
         var data = Encoding.UTF8.GetBytes(plainText);
@@ -92,19 +133,25 @@ public class SecureStorage
 
         var outputBlob = new DATA_BLOB();
 
-        if (CryptProtectData(ref inputBlob, "SARVIS_DATA", ref entropyBlob, IntPtr.Zero, IntPtr.Zero, 0, ref outputBlob))
+        try
         {
-            var encrypted = new byte[outputBlob.cbData];
-            Marshal.Copy(outputBlob.pbData, encrypted, 0, outputBlob.cbData);
+            if (CryptProtectData(ref inputBlob, "SARVIS_DATA", ref entropyBlob, IntPtr.Zero, IntPtr.Zero, 0, ref outputBlob))
+            {
+                var encrypted = new byte[outputBlob.cbData];
+                Marshal.Copy(outputBlob.pbData, encrypted, 0, outputBlob.cbData);
+                return Convert.ToBase64String(encrypted);
+            }
+            throw new Exception("CryptProtectData failed.");
+        }
+        finally
+        {
             Marshal.FreeHGlobal(inputBlob.pbData);
             Marshal.FreeHGlobal(entropyBlob.pbData);
-            Marshal.FreeHGlobal(outputBlob.pbData);
-            return Convert.ToBase64String(encrypted);
+            if (outputBlob.pbData != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(outputBlob.pbData);
+            }
         }
-
-        Marshal.FreeHGlobal(inputBlob.pbData);
-        Marshal.FreeHGlobal(entropyBlob.pbData);
-        throw new Exception("Failed to encrypt data");
     }
 
     private static string DecryptString(string encryptedText)
@@ -118,18 +165,24 @@ public class SecureStorage
 
         var outputBlob = new DATA_BLOB();
 
-        if (CryptUnprotectData(ref inputBlob, null, ref entropyBlob, IntPtr.Zero, IntPtr.Zero, 0, ref outputBlob))
+        try
         {
-            var decrypted = new byte[outputBlob.cbData];
-            Marshal.Copy(outputBlob.pbData, decrypted, 0, outputBlob.cbData);
+            if (CryptUnprotectData(ref inputBlob, IntPtr.Zero, ref entropyBlob, IntPtr.Zero, IntPtr.Zero, 0, ref outputBlob))
+            {
+                var decrypted = new byte[outputBlob.cbData];
+                Marshal.Copy(outputBlob.pbData, decrypted, 0, outputBlob.cbData);
+                return Encoding.UTF8.GetString(decrypted);
+            }
+            throw new Exception("CryptUnprotectData failed.");
+        }
+        finally
+        {
             Marshal.FreeHGlobal(inputBlob.pbData);
             Marshal.FreeHGlobal(entropyBlob.pbData);
-            Marshal.FreeHGlobal(outputBlob.pbData);
-            return Encoding.UTF8.GetString(decrypted);
+            if (outputBlob.pbData != IntPtr.Zero)
+            {
+                Marshal.FreeHGlobal(outputBlob.pbData);
+            }
         }
-
-        Marshal.FreeHGlobal(inputBlob.pbData);
-        Marshal.FreeHGlobal(entropyBlob.pbData);
-        throw new Exception("Failed to decrypt data");
     }
 }

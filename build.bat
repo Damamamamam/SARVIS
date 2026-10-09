@@ -14,6 +14,20 @@ if %ERRORLEVEL% NEQ 0 (
     exit /b 1
 )
 
+REM Check if .NET is installed
+where dotnet >nul 2>nul
+if %ERRORLEVEL% NEQ 0 (
+    if exist "%LOCALAPPDATA%\Microsoft\dotnet\dotnet.exe" (
+        set "PATH=%LOCALAPPDATA%\Microsoft\dotnet;%PATH%"
+    ) else if exist "%USERPROFILE%\AppData\Local\Microsoft\dotnet\dotnet.exe" (
+        set "PATH=%USERPROFILE%\AppData\Local\Microsoft\dotnet;%PATH%"
+    ) else (
+        echo ERROR: .NET SDK is not installed or not in PATH
+        echo Please install .NET SDK from https://dotnet.microsoft.com/
+        exit /b 1
+    )
+)
+
 REM Install dependencies if needed
 if not exist node_modules (
     echo Installing Node.js dependencies...
@@ -24,22 +38,34 @@ if not exist node_modules (
     )
 )
 
-REM Build TypeScript & Package UI
-echo Building TypeScript and UI assets...
+REM Build TypeScript
+echo Building TypeScript...
 call npm run build
 if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: Build failed
+    echo ERROR: TypeScript build failed
     exit /b 1
 )
+
+REM Build Windows Client
+echo Building Windows WPF Client...
+cd windows\JarvisWindows
+call dotnet build
+if %ERRORLEVEL% NEQ 0 (
+    echo ERROR: Windows client build failed
+    cd ..\..
+    exit /b 1
+)
+cd ..\..
 
 echo.
 echo ====================================
 echo Build Complete!
 echo ====================================
 echo.
-echo To launch the SARVIS Windows App:
-echo   npm run dev   (or start-brain.bat)
+echo To launch SARVIS:
+echo   Step 1: Start brain server - npm run start:server
+echo   Step 2: Start Windows client - cd windows\JarvisWindows ^&^& dotnet run
 echo.
-echo To package as a standalone Windows .exe installer:
-echo   npm run package:win
+echo Windows client executable location:
+echo   windows\JarvisWindows\bin\Debug\net10.0-windows\JarvisWindows.exe
 echo.
