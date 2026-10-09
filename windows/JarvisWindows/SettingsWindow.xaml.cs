@@ -33,6 +33,7 @@ public partial class SettingsWindow : Window
         TogetherKeyBox.Password = SecureStorage.LoadSecureValue("API_KEY_TOGETHER") ?? "";
         CohereKeyBox.Password = SecureStorage.LoadSecureValue("API_KEY_COHERE") ?? "";
         DeepSeekKeyBox.Password = SecureStorage.LoadSecureValue("API_KEY_DEEPSEEK") ?? "";
+        OpenCodeZenKeyBox.Password = SecureStorage.LoadSecureValue("API_KEY_OPENCODE_ZEN") ?? "";
 
         // Brain connection url
         var url = SecureStorage.LoadSecureValue("BRAIN_WS_URL");
@@ -82,6 +83,8 @@ public partial class SettingsWindow : Window
                 validationErrors.Add("Cohere key format is invalid");
             if (!string.IsNullOrWhiteSpace(DeepSeekKeyBox.Password) && !IsValidApiKeyFormat(DeepSeekKeyBox.Password))
                 validationErrors.Add("DeepSeek key format is invalid");
+            if (!string.IsNullOrWhiteSpace(OpenCodeZenKeyBox.Password) && !IsValidApiKeyFormat(OpenCodeZenKeyBox.Password))
+                validationErrors.Add("OpenCode Zen key format is invalid");
 
             if (validationErrors.Count > 0)
             {
@@ -109,6 +112,8 @@ public partial class SettingsWindow : Window
                 SecureStorage.SaveSecureValue("API_KEY_COHERE", CohereKeyBox.Password.Trim());
             if (!string.IsNullOrWhiteSpace(DeepSeekKeyBox.Password))
                 SecureStorage.SaveSecureValue("API_KEY_DEEPSEEK", DeepSeekKeyBox.Password.Trim());
+            if (!string.IsNullOrWhiteSpace(OpenCodeZenKeyBox.Password))
+                SecureStorage.SaveSecureValue("API_KEY_OPENCODE_ZEN", OpenCodeZenKeyBox.Password.Trim());
 
             SecureStorage.SaveSecureValue("BRAIN_WS_URL", BrainUrlBox.Text.Trim());
             SecureStorage.SaveSecureValue("ENABLE_CAMERA_TRACKING", EnableCameraTracking ? "true" : "false");

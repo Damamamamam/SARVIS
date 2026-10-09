@@ -62,6 +62,9 @@
 
                         <TextBlock Text="DeepSeek Key:" Foreground="#ccc" Margin="0,10,0,2"/>
                         <PasswordBox x:Name="DeepSeekKeyBox" Background="#2d2d2d" Foreground="White" BorderBrush="#3d3d3d" Padding="6"/>
+
+                        <TextBlock Text="OpenCode Zen (Nemotron Ultra) Key:" Foreground="#ccc" Margin="0,10,0,2"/>
+                        <PasswordBox x:Name="OpenCodeZenKeyBox" Background="#2d2d2d" Foreground="White" BorderBrush="#3d3d3d" Padding="6"/>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

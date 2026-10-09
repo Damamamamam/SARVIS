@@ -71,6 +71,13 @@ const PROVIDERS: Array<{
     endpoint: 'https://api.deepseek.com/chat/completions',
     models: ['deepseek-chat'],
   },
+  {
+    env: 'SARVIS_OPENCODE_ZEN_API_KEY',
+    id: 'opencode-zen-1',
+    provider: 'opencode-zen',
+    endpoint: 'https://integrate.api.nvidia.com/v1/chat/completions',
+    models: ['nvidia/nemotron-4-340b-instruct'],
+  },
 ];
 
 export function loadKeysFromEnv(env: NodeJS.ProcessEnv = process.env): KeyConfig[] {
