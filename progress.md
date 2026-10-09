@@ -21,3 +21,4 @@
 - Build verification: ✅ All tests passing, ✅ Windows build successful.
 - Created complete startup script (start-sarvis.bat) to launch both Brain server and Windows client.
 - Created stop script (stop-sarvis.bat) to gracefully shutdown all components.
+- Created desktop shortcut (SARVIS.lnk) for one-click startup.
