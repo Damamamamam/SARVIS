@@ -15,10 +15,10 @@ WINDOWS docs). `npm start` launches the web app; `start-sarvis.bat` builds,
 starts the server, and opens the browser.
 
 ## Current Phase
-Phase 4 - Finalize and Push.
+Complete.
 
 ## Next Step
-Commit the verified web-only project and push the completed state to GitHub.
+No required project work remains. Optional follow-ups are documented in the Obsidian status note.
 
 ## Phases
 ### Phase 1: Recover Status
@@ -42,7 +42,7 @@ Status: complete
   web smoke test OK (health/UI/hear/WS/reminder).
 
 ### Phase 4: Update Vault And GitHub
-Status: in_progress
+Status: complete
 - Update Obsidian progress.
 - Commit all project changes.
 - Push to origin.
