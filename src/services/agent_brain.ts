@@ -76,7 +76,7 @@ function atHour(n: Date, m: RegExpMatchArray): Date {
 }
 
 export class AgentBrain {
-  private rotator: APIRotatorService;
+  readonly rotator: APIRotatorService;
   private conversation: Conversation;
   private reminders: Reminder[] = [];
   private screenTime: Map<string, ScreenTimeEntry> = new Map();
@@ -159,11 +159,13 @@ export class AgentBrain {
     }
 
     // LLM path
-    const res = await this.rotator.complete({ messages: this.conversation.transcript });
+    const res = await this.rotator.complete({ messages: this.conversation.transcript, maxTokens: 512 });
     if (!res.ok) {
       const fallback = localFallback(utterance);
-      this.conversation.transcript.push({ role: 'assistant', content: fallback, tsMs: Date.now() });
-      return { reply: fallback, events, degraded: true };
+      // Surface the real provider error so "rate-limited" is never a mystery.
+      const detail = res.error ? ` (Provider error: ${res.error.slice(0, 180)})` : '';
+      this.conversation.transcript.push({ role: 'assistant', content: fallback + detail, tsMs: Date.now() });
+      return { reply: fallback + detail, events, degraded: true };
     }
 
     const reply = res.completion?.choices[0]?.message?.content ?? res.completion?.choices[0]?.text ?? '...';
@@ -210,5 +212,5 @@ function localFallback(utterance: string): string {
   const lower = utterance.toLowerCase();
   if (lower.includes('time')) return `It's ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`;
   if (lower.includes('date') || lower.includes('day')) return `Today is ${new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })}.`;
-  return "I'm running on local fallback right now — my AI providers are all rate-limited. I can still set reminders and tell time.";
+  return "I'm running on local fallback right now - my AI providers are unavailable. I can still set reminders and tell time.";
 }

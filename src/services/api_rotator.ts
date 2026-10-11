@@ -1,5 +1,5 @@
 /**
- * APIRotatorService — provider-agnostic 8-key failover rotator.
+ * APIRotatorService — provider-agnostic 9-key failover rotator.
  *
  * Design invariants (see docs/architecture.md §4.1):
  *  - Exactly one key is ACTIVE at a time; all others are IDLE or COOLDOWN.
@@ -39,7 +39,7 @@ const DEFAULT_POLICY: Required<RotatorPolicy> = {
   failoverOn: ['429', 'rate_limit', 'quota', 'timeout', '5xx'],
   cooldownBaseSec: 30,
   healthCheckIntervalSec: 60,
-  timeoutMs: 20_000,
+  timeoutMs: 8_000,
   maxRetries: 8,
 };
 
@@ -78,7 +78,7 @@ export class APIRotatorService {
       this.policy = { ...DEFAULT_POLICY, ...policy };
       return;
     }
-    if (keys.length > 8) throw new Error('APIRotatorService: at most 8 keys are supported');
+    if (keys.length > 9) throw new Error('APIRotatorService: at most 9 keys are supported');
     this.policy = { ...DEFAULT_POLICY, ...policy };
     this.keys = keys.map((k) => ({
       ...k,
@@ -115,6 +115,9 @@ export class APIRotatorService {
     maxTokens?: number;
   }): Promise<RotatorResult> {
     let failovers = 0;
+    if (this.keys.length === 0) {
+      return { ok: false, keyId: '', provider: 'none', error: 'no keys configured', failovers, degraded: true };
+    }
     let currentIdx = this.activeIndex;
     if (currentIdx < 0) currentIdx = 0;
 
@@ -245,6 +248,26 @@ export class APIRotatorService {
   }
 
   private async callProvider(
+    key: ManagedKey,
+    request: { messages: Array<{ role: string; content: string }>; model?: string; maxTokens?: number },
+  ): Promise<ChatCompletion> {
+    // Provider gateways occasionally return a transient 503 during model
+    // failover. Give the active provider one quick retry before cooling it.
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        return await this.callProviderOnce(key, request);
+      } catch (err) {
+        if (attempt === 0 && err instanceof Failure && err.status === 503) {
+          await this.sleep(500);
+          continue;
+        }
+        throw err;
+      }
+    }
+    throw new Failure('server error 503', 503);
+  }
+
+  private async callProviderOnce(
     key: ManagedKey,
     request: { messages: Array<{ role: string; content: string }>; model?: string; maxTokens?: number },
   ): Promise<ChatCompletion> {

@@ -2,7 +2,7 @@
 
 export interface KeyConfig {
   id: string;
-  provider: string; // gemini | groq | openrouter | cerebras | mistral | together | cohere | deepseek
+  provider: string; // gemini | groq | openrouter | cerebras | mistral | together | cohere | deepseek | opencode-zen
   endpoint: string; // OpenAI-compatible chat completions URL
   apiKey: string; // resolved at runtime from env / Keystore — never hardcoded
   models: string[];

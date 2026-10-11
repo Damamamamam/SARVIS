@@ -2,7 +2,7 @@
 
 ## Overview
 
-SARVIS is a comprehensive AI assistant framework designed for Windows desktop environments. It provides a modular architecture for building intelligent voice-controlled applications with advanced automation capabilities.
+SARVIS is a web-app AI assistant framework. It provides a modular architecture for building intelligent chat/voice applications with automation capabilities, running entirely in the browser with a Node.js/TypeScript backend.
 
 ## Core Components
 
@@ -10,43 +10,44 @@ SARVIS is a comprehensive AI assistant framework designed for Windows desktop en
 - **Location**: `src/`
 - **Purpose**: Central intelligence and orchestration
 - **Features**:
-  - 8-key API rotator for LLM failover
+  - 9-key API rotator for LLM failover
   - Intent routing and conversation management
   - Device control orchestration
   - Screen time monitoring
   - Vision processing hooks
   - Free web tools integration
 
-### 2. Windows Client (.NET 8.0)
-- **Location**: `windows/JarvisWindows/`
-- **Purpose**: Windows-specific implementations
+### 2. Web App (Browser + Node server)
+- **Location**: `src/ui/` + `src/server/webapp.ts`
+- **Purpose**: Chat/voice frontend served over HTTP
 - **Features**:
-  - Audio capture via NAudio
-  - Voice I/O via Windows Speech API
-  - Window automation via Windows API
-  - Secure storage via DPAPI
-  - WebSocket client for brain communication
+  - Chat UI with typing indicator and send resilience
+  - Voice converse mode (single utterance + hands-free loop)
+  - Spoken replies via SpeechSynthesis with on/off toggle
+  - Live replies and screen-time nudges over WebSocket (`/ws`)
+  - API-key settings backed by `/api/keys`
+  - Works in any modern browser — no install needed
 
 ### 3. Communication Protocol
-- **Protocol**: WebSocket (ws://localhost:9741)
-- **Format**: JSON envelopes with module-based routing
+- **Web UI**: HTTP JSON API (`/api/hear`, `/api/status`, `/api/keys`, `/api/command`) + WebSocket (`/ws`) on port 9742
+- **Headless bridge**: WebSocket (`ws://localhost:9741`) with JSON envelopes and module-based routing
 - **Modules**: `audio`, `vision`, `screen`, `device`, `voice`
 
 ## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                    Windows Client                        │
+│                    Browser (any device)                  │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐ │
-│  │ Audio Capture│  │ Voice I/O    │  │ Window Auto  │ │
+│  │ Chat UI      │  │ Voice converse│  │ Settings    │ │
 │  └──────────────┘  └──────────────┘  └──────────────┘ │
-│                      │ WebSocket Client                │
+│              HTTP /api/*  +  WS /ws (live)              │
 └──────────────────────┼──────────────────────────────────┘
-                       │ ws://localhost:9741
+                       │
 ┌──────────────────────┼──────────────────────────────────┐
 │                      │         Brain (Node.js)          │
 │                      │  ┌──────────────────────────────┐ │
-│                      │  │  API Rotator (8-key failover)│ │
+│                      │  │  API Rotator (9-key failover)│ │
 │                      │  └──────────────────────────────┘ │
 │                      │  ┌──────────────────────────────┐ │
 │                      │  │  Agent Brain (orchestration) │ │
@@ -68,7 +69,7 @@ SARVIS is a comprehensive AI assistant framework designed for Windows desktop en
 
 ## Supported LLM Providers
 
-The framework supports failover across 8 different API providers:
+The framework supports failover across 9 different API providers:
 
 1. Gemini
 2. Groq
@@ -78,6 +79,7 @@ The framework supports failover across 8 different API providers:
 6. Together
 7. Cohere
 8. DeepSeek
+9. OpenCode Zen (Nemotron 3 Ultra Free)
 
 ## Environment Configuration
 
@@ -90,22 +92,22 @@ SARVIS_MISTRAL_API_KEY=your-key
 SARVIS_TOGETHER_API_KEY=your-key
 SARVIS_COHERE_API_KEY=your-key
 SARVIS_DEEPSEEK_API_KEY=your-key
+SARVIS_OPENCODE_ZEN_API_KEY=your-key
 ```
 
 ## Quick Start
 
-### Start the Brain
+### Start the Web App
 ```powershell
 cd "C:\Users\give it back\OneDrive\Desktop\NVMUN\brain"
 npm run build
-npm run start:server
+npm start
+# open http://localhost:9742
 ```
 
-### Start the Windows Client
+### Start the Headless Bridge (no UI)
 ```powershell
-cd "C:\Users\give it back\OneDrive\Desktop\NVMUN\brain\windows\JarvisWindows"
-$env:PATH = "C:\Users\give it back\AppData\Local\Microsoft\dotnet;$env:PATH"
-dotnet run
+npm run start:server
 ```
 
 ## Extension Points
@@ -114,24 +116,23 @@ dotnet run
 1. Add environment variable to `.env.example`
 2. Update `src/config/load_keys.ts`
 3. Add provider configuration to API rotator
-
-### Adding New Windows Features
-1. Implement service in `windows/JarvisWindows/`
-2. Add WebSocket message handling in `Program.cs`
-3. Update protocol mapping in `src/protocol/client_payload.ts`
+4. Add the key field to `src/ui/index.html` + `src/ui/app.js` key lists
 
 ### Adding New Brain Services
 1. Create service in `src/services/`
 2. Integrate in `src/agent/brain.ts`
 3. Add unit tests in `test/`
 
+### Adding New Web API Endpoints
+1. Add the route in `src/server/webapp.ts`
+2. Add the matching `api*` helper in `src/ui/app.js`
+
 ## Security Features
 
-- **Secure Storage**: Windows DPAPI for sensitive data
-- **API Key Management**: Environment-based, never hardcoded
-- **WebSocket Security**: Localhost binding by default
+- **API Key Management**: Environment-based, never hardcoded; web settings never leak secrets back to the browser
+- **Localhost Binding**: WebSocket/HTTP bind locally by default
 - **Kill Switch**: Immediate audio capture termination
-- **Degraded Mode**: Functions without API keys (limited)
+- **Degraded Mode**: Functions without API keys (reminders, time/date work offline)
 
 ## Testing
 
@@ -152,18 +153,19 @@ npm run test:vision
 - **Memory**: Rolling buffer with configurable window size
 - **Network**: WebSocket with exponential backoff reconnection
 - **Processing**: Asynchronous non-blocking operations
+- **UI**: Throttled status polling (5s); WebSocket preferred over polling for chat
 
 ## Troubleshooting
 
-### Brain Not Starting
+### Web App Not Starting
 - Check Node.js version (18+)
-- Verify port 9741 is available
-- Check environment variable syntax
+- Verify port 9742 is available (`SARVIS_PORT` overrides)
+- Run `npm run build` first so `dist/` is fresh
 
-### Windows Client Issues
-- Verify .NET SDK installation
-- Check microphone permissions
-- Ensure Windows Speech API is available
+### Chat Send Failures
+- Check the browser console and the in-chat error message
+- Verify the server is reachable at `/api/health`
+- The UI retries WebSocket with backoff and falls back to REST automatically
 
 ### API Failover Issues
 - Verify API key format
@@ -173,11 +175,10 @@ npm run test:vision
 ## Future Enhancements
 
 - Camera integration for vision features
-- Enhanced GUI with WinUI 3
-- System tray integration
+- Plugin system for extensions
 - Advanced gesture recognition
 - Multi-language support
-- Plugin system for extensions
+- Mobile companion app
 
 ## License
 

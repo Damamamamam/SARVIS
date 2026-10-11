@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SARVIS Windows Desktop</title>
+  <title>SARVIS Web Assistant</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,17 +25,17 @@
       </div>
 
       <form class="setup-form" id="setupForm">
-        <!-- Gemini — REQUIRED -->
+        <!-- Gemini — recommended -->
         <div class="setup-field required" id="setupFieldGemini">
           <div class="setup-field-header">
             <div class="setup-field-info">
-              <span class="setup-provider-name">Google Gemini <span class="setup-badge-required">REQUIRED</span></span>
-              <span class="setup-provider-model">Flash 2.5 — Primary intelligence engine</span>
+              <span class="setup-provider-name">Google Gemini <span class="setup-badge-required">RECOMMENDED</span></span>
+              <span class="setup-provider-model">Flash 3.1 Lite — Primary intelligence engine</span>
             </div>
             <a href="https://makersuite.google.com/app/apikey" target="_blank" class="setup-get-key" title="Get your Gemini API key">Get Key →</a>
           </div>
-          <input type="password" id="setup_SARVIS_GEMINI_API_KEY" placeholder="AIzaSy..." autocomplete="off" required>
-          <span class="setup-field-error" id="geminiError">Gemini API key is required to continue</span>
+          <input type="password" id="setup_SARVIS_GEMINI_API_KEY" placeholder="AIzaSy... or AQ..." autocomplete="off">
+          <span class="setup-field-error" id="geminiError">Add at least one provider key to continue</span>
         </div>
 
         <!-- Groq — optional -->
@@ -122,6 +122,18 @@
           <input type="password" id="setup_SARVIS_DEEPSEEK_API_KEY" placeholder="sk-..." autocomplete="off">
         </div>
 
+        <!-- OpenCode Zen — optional -->
+        <div class="setup-field">
+          <div class="setup-field-header">
+            <div class="setup-field-info">
+              <span class="setup-provider-name">OpenCode Zen <span class="setup-badge-optional">OPTIONAL</span></span>
+              <span class="setup-provider-model">Nemotron 3 Ultra Free — OpenCode gateway</span>
+            </div>
+            <a href="https://opencode.ai/zen" target="_blank" class="setup-get-key">Get Key →</a>
+          </div>
+          <input type="password" id="setup_SARVIS_OPENCODE_ZEN_API_KEY" placeholder="oc_sk_..." autocomplete="off">
+        </div>
+
         <div class="setup-actions">
           <button type="submit" class="setup-submit-btn" id="setupSubmitBtn" disabled>
             <span class="setup-submit-text">Save &amp; Launch SARVIS</span>
@@ -140,7 +152,7 @@
         <div class="brand-logo">
           <div class="logo-core"></div>
         </div>
-        <span class="brand-title">SARVIS <span class="brand-subtitle">Windows Desktop</span></span>
+        <span class="brand-title">SARVIS <span class="brand-subtitle">Web Assistant</span></span>
       </div>
       <div class="header-status" id="activeProviderBadge">
         <span class="status-dot green"></span>
@@ -167,7 +179,7 @@
           </button>
           <button class="nav-item" data-tab="rotatorView">
             <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-            <span>8-Key Rotator</span>
+            <span>9-Key Rotator</span>
           </button>
           <button class="nav-item" data-tab="controlsView">
             <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
@@ -210,10 +222,10 @@
               <button class="chip-btn" data-query="Search Wikipedia for Quantum Computing">🌐 Wiki Search</button>
             </div>
             <div class="chat-input-bar">
-              <button class="mic-btn" id="btnVoice" title="Toggle Speech Listening">
+              <button class="mic-btn" id="btnVoice" title="Voice input (click = once, double-click = converse mode)">
                 <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
               </button>
-              <input type="text" id="txtInput" placeholder="Ask SARVIS anything or type a Windows command..." autocomplete="off">
+              <input type="text" id="txtInput" placeholder="Ask SARVIS anything… (Enter to send)" autocomplete="off">
               <button class="send-btn" id="btnSend" title="Send Message">
                 <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
               </button>
@@ -221,10 +233,10 @@
           </div>
         </section>
 
-        <!-- 2. 8-Key Rotator Dashboard View -->
+        <!-- 2. 9-Key Rotator Dashboard View -->
         <section class="view-panel" id="rotatorView">
           <div class="panel-header">
-            <h2>8-Key API Failover Rotator</h2>
+            <h2>9-Key API Failover Rotator</h2>
             <p>Monitors LLM key health and seamlessly switches providers on rate limits or errors.</p>
           </div>
           <div class="rotator-grid" id="rotatorGrid">
@@ -302,7 +314,7 @@
         <section class="view-panel" id="settingsView">
           <div class="panel-header">
             <h2>API Key Management</h2>
-            <p>Configure your 8 provider API keys. At least one key is recommended for full AI capabilities.</p>
+            <p>Configure your 9 provider API keys. At least one key is recommended for full AI capabilities.</p>
             <button type="button" class="btn accent setup-reopen-btn" id="btnReconfigureKeys" style="margin-top:12px;">
               <svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:middle;margin-right:6px;"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
               Reconfigure API Keys
@@ -310,7 +322,7 @@
           </div>
           <form class="keys-form" id="keysForm">
             <div class="key-field">
-              <label for="key_gemini">Google Gemini Key (Flash 2.5)</label>
+              <label for="key_gemini">Google Gemini Key (Flash 3.1 Lite)</label>
               <input type="password" id="SARVIS_GEMINI_API_KEY" placeholder="AIzaSy...">
             </div>
             <div class="key-field">
@@ -340,6 +352,10 @@
             <div class="key-field">
               <label for="key_deepseek">DeepSeek Key</label>
               <input type="password" id="SARVIS_DEEPSEEK_API_KEY" placeholder="sk-...">
+            </div>
+            <div class="key-field">
+              <label for="key_opencode_zen">OpenCode Zen Key (Nemotron Ultra)</label>
+              <input type="password" id="SARVIS_OPENCODE_ZEN_API_KEY" placeholder="nvapi-...">
             </div>
             <div class="form-actions">
               <button type="submit" class="btn accent">Save API Keys</button>

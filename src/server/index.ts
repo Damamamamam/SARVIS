@@ -2,16 +2,16 @@
  * SARVIS brain process: WebSocket server + agent loop.
  *
  *   npm start
- *   SARVIS_BIND=0.0.0.0 SARVIS_PORT=9741 npm start
+ *   SARVIS_BIND=0.0.0.0 SARVIS_PORT=9741 npm run start:server
  */
 import { JarvisBrain } from '../agent/brain.js';
-import { loadKeysFromEnv } from '../config/load_keys.js';
+import { loadDotEnvFile, loadKeysFromEnv, validateKeyFormats } from '../config/load_keys.js';
 import { pcm16leBase64ToFloat32 } from '../protocol/client_payload.js';
 import type { FaceLandmarks } from '../services/vision_tracker.js';
 import { BrainBridge, type BridgeMessage } from './bridge.js';
 
 const PORT = Number(process.env.SARVIS_PORT ?? 9741);
-const HOST = process.env.SARVIS_BIND ?? '0.0.0.0';
+const HOST = process.env.SARVIS_BIND ?? '127.0.0.1';
 
 function asLandmarks(payload: Record<string, unknown>): FaceLandmarks | null {
   const lm = payload.landmarks as FaceLandmarks | undefined;
@@ -22,9 +22,13 @@ function asLandmarks(payload: Record<string, unknown>): FaceLandmarks | null {
 }
 
 async function main(): Promise<void> {
+  const loadedEnvs = loadDotEnvFile();
+  for (const w of validateKeyFormats()) console.warn(`SARVIS config: ${w}`);
   const keys = loadKeysFromEnv();
   if (keys.length === 0) {
-    console.warn('No SARVIS_*_API_KEY env vars set — LLM path will run degraded/local fallback.');
+    console.warn('No SARVIS_*_API_KEY values found (.env or environment) — LLM path will run degraded/local fallback.');
+  } else {
+    console.log(`SARVIS providers configured: ${loadedEnvs.map((e) => e.replace('SARVIS_', '').replace('_API_KEY', '').toLowerCase()).join(', ')}`);
   }
 
   const bridge = new BrainBridge(HOST, PORT);

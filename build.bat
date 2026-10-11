@@ -1,8 +1,8 @@
 @echo off
-REM SARVIS Windows Desktop Build Script
+REM SARVIS Web App Build Script
 
 echo ====================================
-echo SARVIS Windows App Build Script
+echo SARVIS Web App Build Script
 echo ====================================
 echo.
 
@@ -12,20 +12,6 @@ if %ERRORLEVEL% NEQ 0 (
     echo ERROR: Node.js is not installed or not in PATH
     echo Please install Node.js 18+ from https://nodejs.org/
     exit /b 1
-)
-
-REM Check if .NET is installed
-where dotnet >nul 2>nul
-if %ERRORLEVEL% NEQ 0 (
-    if exist "%LOCALAPPDATA%\Microsoft\dotnet\dotnet.exe" (
-        set "PATH=%LOCALAPPDATA%\Microsoft\dotnet;%PATH%"
-    ) else if exist "%USERPROFILE%\AppData\Local\Microsoft\dotnet\dotnet.exe" (
-        set "PATH=%USERPROFILE%\AppData\Local\Microsoft\dotnet;%PATH%"
-    ) else (
-        echo ERROR: .NET SDK is not installed or not in PATH
-        echo Please install .NET SDK from https://dotnet.microsoft.com/
-        exit /b 1
-    )
 )
 
 REM Install dependencies if needed
@@ -38,34 +24,20 @@ if not exist node_modules (
     )
 )
 
-REM Build TypeScript
-echo Building TypeScript...
+REM Build TypeScript + UI assets
+echo Building TypeScript and web UI...
 call npm run build
 if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: TypeScript build failed
+    echo ERROR: Build failed
     exit /b 1
 )
-
-REM Build Windows Client
-echo Building Windows WPF Client...
-cd windows\JarvisWindows
-call dotnet build
-if %ERRORLEVEL% NEQ 0 (
-    echo ERROR: Windows client build failed
-    cd ..\..
-    exit /b 1
-)
-cd ..\..
 
 echo.
 echo ====================================
 echo Build Complete!
 echo ====================================
 echo.
-echo To launch SARVIS:
-echo   Step 1: Start brain server - npm run start:server
-echo   Step 2: Start Windows client - cd windows\JarvisWindows ^&^& dotnet run
-echo.
-echo Windows client executable location:
-echo   windows\JarvisWindows\bin\Debug\net10.0-windows\JarvisWindows.exe
+echo To launch SARVIS web app:
+echo   npm start
+echo Then open http://localhost:9742 in your browser.
 echo.

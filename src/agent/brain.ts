@@ -8,8 +8,8 @@
  *
  *   vision (camera) ─┐
  *   audio  (mic)    ─┼─► JarvisBrain ─► AgentBrain ─► APIRotatorService
- *   screen (guard)  ─┘                  │            (8-key failover)
- *                                      └─► DeviceControlService (Client bridge)
+ *   screen (guard)  ─┘                  │            (9-key failover)
+ *                                      └─► DeviceControlService (optional bridge)
  */
 import { AgentBrain, type BrainConfig, type BrainResult } from '../services/agent_brain.js';
 import { APIRotatorService } from '../services/api_rotator.js';
@@ -39,8 +39,8 @@ export class JarvisBrain {
   private device: DeviceControlService | null = null;
 
   constructor(deps: JarvisBrainDeps) {
-    this.rotator = new APIRotatorService(deps.keys);
     this.brain = new AgentBrain({ keys: deps.keys, ...deps.brainConfig });
+    this.rotator = this.brain.rotator;
     this.audio = new AmbientAudioRecorder();
     this.vision = new OwnerTalkDetector();
     this.guard = new DoomscrollGuard({ thresholdMs: deps.screenThresholdMs });
@@ -58,6 +58,12 @@ export class JarvisBrain {
   /** Process a transcribed utterance end-to-end through the brain. */
   async hear(utterance: string): Promise<BrainResult> {
     if (this.rotator.keyCount === 0) {
+      // No LLM keys: still honor local paths (reminders, time/date) so the
+      // web app and voice converse mode stay useful offline.
+      try {
+        const local = await this.brain.process(utterance);
+        if (local.reminders?.length || !local.reply.includes('rate-limited')) return local;
+      } catch { /* fall through to degraded reply */ }
       return {
         reply: "I'm currently running in degraded mode without API keys. Please configure at least one LLM API key to enable full intelligence.",
         degraded: true

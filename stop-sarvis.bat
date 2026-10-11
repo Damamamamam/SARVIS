@@ -1,8 +1,7 @@
 @echo off
-REM SARVIS Windows Desktop Application - Stop Script (Silent)
+REM SARVIS Web App - Stop Script
 
-REM Stop Windows client
-taskkill /F /IM JarvisWindows.exe >nul 2>&1
-
-REM Stop Brain server (Node.js process)
-taskkill /F /IM node.exe /FI "WINDOWTITLE eq SARVIS Brain Server*" >nul 2>&1
+REM Stop the SARVIS web server (Node.js process running webapp.js)
+for /f "tokens=2" %%p in ('tasklist /FI "IMAGENAME eq node.exe" /FO LIST ^| find "PID:"') do (
+    taskkill /F /PID %%p >nul 2>&1
+)

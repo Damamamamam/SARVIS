@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# SARVIS Windows App Startup Script
+# SARVIS Web App Startup Script
 
 set -e
 
 echo "===================================="
-echo "Starting SARVIS Windows Desktop"
+echo "Starting SARVIS Web App"
 echo "===================================="
 
 if [ ! -f ".env" ]; then

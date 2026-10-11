@@ -2,7 +2,7 @@
 
 ## Project State
 - Repository remote is `https://github.com/Damamamamam/SARVIS.git`.
-- Worktree already contains substantial Windows client changes under `windows/JarvisWindows`; treat them as active project work and do not revert.
+- The repository is now intentionally web-only; the earlier Electron and WPF clients were removed during the product redirect.
 - The Obsidian vault is present at `obsidian-vault` inside the repository.
 - Vault says current milestone is camera integration and GUI enhancements.
 - TypeScript brain verification passes: `npm test` reports 41/41 passing.
@@ -12,4 +12,17 @@
 - Antigravity IDE is installed and has been launched/observed through Computer Use.
 
 ## Build Findings
-- Windows build initially failed because `CameraVisionService.cs` referenced `System.Management` without the corresponding project package.
+- Historical Windows build work is preserved in the progress log, but the current release gate is the TypeScript web app build and browser smoke test.
+
+## Redirect Findings (2026-10-09)
+- WPF crackle root causes: subsystem startup on the UI thread, per-callback
+  `Dispatcher.Invoke` + full waveform redraw (~100 rects), overlapping Grid rows,
+  audio-thread sends with no guard, silent send failures when offline.
+- Web UI send failures root cause: `app.js` assumed Electron IPC only
+  (`window.jarvisAPI.hear`); outside Electron every send threw.
+- `JarvisBrain.hear` short-circuited to degraded with zero keys, hiding the
+  local reminder/time paths; `APIRotatorService.complete` threw TypeError with zero keys.
+- Rotator limit (8) contradicted the 9th provider (OpenCode Zen) in `load_keys.ts`.
+- Provider status was reading a duplicate rotator instead of the AgentBrain rotator that served requests.
+- `.env.example` values were counted as configured keys; OpenCode Zen used an obsolete NVIDIA endpoint; Gemini's initial model was retired or intermittently overloaded.
+- Fixed by sharing the live rotator, rejecting placeholders, using the OpenCode Zen gateway endpoint, selecting Gemini 3.1 Flash Lite, retrying transient 503s, and verifying the browser flow live.

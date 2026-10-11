@@ -1,18 +1,18 @@
 {
   "name": "sarvis-brain",
   "version": "0.1.0",
-  "description": "SARVIS Windows Assistant: 8-key API rotator, Windows automation, intent routing, tools",
-  "main": "dist/src/server/index.js",
+  "description": "SARVIS Web Assistant: 9-key API rotator, automation, intent routing, tools",
+  "main": "dist/src/server/webapp.js",
   "type": "module",
   "private": true,
   "scripts": {
     "build": "tsc && npm run copy-ui",
     "copy-ui": "node -e \"const fs = require('fs'); fs.mkdirSync('dist/src/ui', { recursive: true }); fs.copyFileSync('src/ui/index.html', 'dist/src/ui/index.html'); fs.copyFileSync('src/ui/styles.css', 'dist/src/ui/styles.css'); fs.copyFileSync('src/ui/app.js', 'dist/src/ui/app.js');\"",
-    "start": "node dist/src/server/index.js",
+    "start": "node dist/src/server/webapp.js",
+    "start:web": "node dist/src/server/webapp.js",
     "start:server": "node dist/src/server/index.js",
-    "gui": "electron dist/src/electron/main.js",
-    "start:gui": "npm run build && electron dist/src/electron/main.js",
-    "dev": "npm run build && node dist/src/server/index.js",
+    "dev": "npm run build && node dist/src/server/webapp.js",
+    "dev:web": "npm run build && node dist/src/server/webapp.js",
     "test": "tsc && node --test dist/test/*.test.js",
     "test:rotator": "tsc && node --test dist/test/api_rotator.test.js",
     "test:device": "tsc && node --test dist/test/device_control.test.js",
@@ -26,7 +26,6 @@
   "devDependencies": {
     "@types/node": "^24.0.0",
     "@types/ws": "^8.18.1",
-    "electron": "^31.7.7",
     "typescript": "^5.5.0"
   }
 }

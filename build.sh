@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# SARVIS Windows App Build Script
+# SARVIS Web App Build Script
 
 set -e
 
 echo "===================================="
-echo "SARVIS Windows App Build Script"
+echo "SARVIS Web App Build Script"
 echo "===================================="
 echo
 
@@ -18,12 +18,11 @@ if [ ! -d "node_modules" ]; then
     npm install
 fi
 
-echo "Building TypeScript and UI assets..."
+echo "Building TypeScript and web UI assets..."
 npm run build
 
 echo
 echo "===================================="
 echo "Build Complete!"
 echo "===================================="
-echo "Run 'npm run dev' to launch the app."
-echo "Run 'npm run package:win' to build the Windows installer."
+echo "Run 'npm start' to launch the web app (http://localhost:9742)."
