@@ -169,8 +169,11 @@ test('manual rotate() forces a switch without any HTTP call', async () => {
   assert.equal(rotator.status().keys.find((k: ManagedKey) => k.id === after)!.state, 'ACTIVE');
 });
 
-test('rejects more than 9 keys', () => {
-  assert.throws(() => new APIRotatorService(mockKeys(10)), /at most 9/);
+test('accepts more than 9 keys for unlimited custom-key rotation', () => {
+  const rotator = new APIRotatorService(mockKeys(10));
+  assert.equal(rotator.keyCount, 10);
+  assert.equal(rotator.status().keys[0].apiKey, 'configured');
+  rotator.dispose();
 });
 
 test('timeout failure is treated as failover trigger', async () => {

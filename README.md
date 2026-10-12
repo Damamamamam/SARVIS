@@ -1,12 +1,13 @@
 # SARVIS Web Assistant
 
-SARVIS is a web-app AI assistant with a Node.js/TypeScript brain, featuring a 9-key API rotator, chat + voice converse mode, system automation, and screen-time monitoring. It runs entirely in the browser — no desktop build needed.
+SARVIS is a personal computer agent with a Node.js/TypeScript brain, a minimalist web client, and a lightweight desktop app. It supports chat, voice input, system automation, screen-time monitoring, and an unlimited local vault of API keys.
 
 ## 🏗️ Architecture
 
 - **Web App**: Browser chat UI (HTML5, CSS3 glassmorphism, vanilla JS) served by the Node server, with live WebSocket replies and screen-time nudges.
 - **Brain (Node.js/TypeScript)**: HTTP + WebSocket server handling intent routing, API rotator, device control, and personalization.
-- **9-Key API Rotator**: Failover across Gemini, Groq, OpenRouter, Cerebras, Mistral, Together, Cohere, DeepSeek, and OpenCode Zen.
+- **Unlimited API-key Rotator**: Failover across built-in providers plus any number of custom OpenAI-compatible endpoints and keys.
+- **Desktop app**: `npm run start:app` launches the same UI and brain in a local Electron shell on port `9743`.
 - **Voice Converse Mode**: Mic click = single utterance, double-click = hands-free loop (listen → spoken reply → listen…), with 🔊/🔇 reply toggle and 🎙 status badge.
 - **Screen Time Monitoring**: Active window tracking and doomscroll guard with live nudges.
 
@@ -24,7 +25,17 @@ npm start
 
 Then open `http://localhost:9742` in any browser (or just run `start-sarvis.bat`, which builds, starts the server, and opens the browser for you).
 
-> **First-Time Setup**: On first launch with no usable API keys configured, SARVIS shows a setup wizard. Any one of the 9 provider keys is enough to enable the LLM path; keys can be reconfigured at any time via the **API Keys** tab. Values copied from `.env.example` are ignored until replaced with real keys.
+For the desktop app:
+
+```powershell
+npm run start:app
+```
+
+The desktop shell starts its private local brain on `http://127.0.0.1:9743`. The browser and desktop clients share the same agent behavior and local key vault.
+
+On Windows, `SARVIS App.lnk` on the Desktop launches the same app without leaving a terminal window open.
+
+> **First-Time Setup**: On first launch with no usable API keys configured, SARVIS shows a setup wizard. Add any provider or OpenAI-compatible endpoint, then add unlimited additional keys from the **API keys** tab. Values copied from `.env.example` are ignored until replaced with real keys.
 
 Set `SARVIS_PORT` / `SARVIS_BIND` env vars to change host/port. The default bind is `127.0.0.1` because the settings endpoint accepts API keys; use `SARVIS_BIND=0.0.0.0` only on a trusted network.
 

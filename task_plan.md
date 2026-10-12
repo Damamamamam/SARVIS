@@ -18,7 +18,7 @@ starts the server, and opens the browser.
 Complete.
 
 ## Next Step
-No required project work remains. Optional CI and production hardening are documented in the Obsidian status note.
+No required project work remains. Optional CI, packaging, and production hardening are documented in the project notes.
 
 ## Phases
 ### Phase 1: Recover Status
@@ -32,7 +32,7 @@ Status: complete
 - Fix compile/runtime blockers.
 - Fill missing integration points that are documented as incomplete.
 - Redirect: WPF stability fixes, web-app server, dual-transport UI,
-  voice converse mode, offline hear, 9-key consistency.
+  voice converse mode, offline hear, provider consistency.
 
 ### Phase 3: Verify
 Status: complete
@@ -53,6 +53,13 @@ Status: complete
 - Route agent tasks through the normal `hear` path and return step-by-step execution results.
 - Add parser/execution tests and run live browser + Computer Use verification.
 - Update the vault and push the verified fix to GitHub.
+
+### Phase 6: Web + Desktop Product
+Status: complete
+- Support unlimited custom API key entries with masked status and local persistence.
+- Replace the fixed provider settings UI with a minimal dynamic key manager.
+- Add a minimal desktop app shell that shares the web UI and brain.
+- Run build, tests, web smoke checks, and desktop launch verification before pushing.
 
 ## Errors Encountered
 | Error | Attempt | Resolution |

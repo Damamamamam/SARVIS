@@ -1,372 +1,85 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SARVIS Web Assistant</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f8f4">
+  <title>SARVIS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
-<body class="dark-theme">
-  <!-- ========== FIRST-RUN SETUP WIZARD ========== -->
-  <div class="setup-wizard-overlay" id="setupWizard">
-    <div class="setup-bg-anim"></div>
-    <div class="setup-card">
-      <div class="setup-header">
-        <div class="setup-logo">
-          <div class="setup-logo-ring">
-            <div class="setup-logo-core"></div>
-          </div>
-        </div>
-        <h1 class="setup-title">Welcome to <span class="setup-brand">SARVIS</span></h1>
-        <p class="setup-subtitle">Configure your AI providers to get started. You can always change these later.</p>
-      </div>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark"></span><span>SARVIS</span></div>
+      <nav class="nav" aria-label="Main navigation">
+        <button class="nav-item active" data-tab="chatView">Conversation</button>
+        <button class="nav-item" data-tab="controlsView">Controls</button>
+        <button class="nav-item" data-tab="keysView">API keys</button>
+      </nav>
+      <div class="sidebar-foot"><span class="pulse"></span><span id="activeProviderName">Checking brain</span></div>
+    </aside>
 
-      <form class="setup-form" id="setupForm">
-        <!-- Gemini — recommended -->
-        <div class="setup-field required" id="setupFieldGemini">
-          <div class="setup-field-header">
-            <div class="setup-field-info">
-              <span class="setup-provider-name">Google Gemini <span class="setup-badge-required">RECOMMENDED</span></span>
-              <span class="setup-provider-model">Flash 3.1 Lite — Primary intelligence engine</span>
-            </div>
-            <a href="https://makersuite.google.com/app/apikey" target="_blank" class="setup-get-key" title="Get your Gemini API key">Get Key →</a>
-          </div>
-          <input type="password" id="setup_SARVIS_GEMINI_API_KEY" placeholder="AIzaSy... or AQ..." autocomplete="off">
-          <span class="setup-field-error" id="geminiError">Add at least one provider key to continue</span>
-        </div>
+    <main class="main">
+      <header class="topbar">
+        <div><p class="eyebrow">PERSONAL COMPUTER AGENT</p><h1 id="pageTitle">Conversation</h1></div>
+        <div class="health"><span class="pulse" id="healthPulse"></span><span id="healthText">Connecting</span></div>
+      </header>
 
-        <!-- Groq — optional -->
-        <div class="setup-field">
-          <div class="setup-field-header">
-            <div class="setup-field-info">
-              <span class="setup-provider-name">Groq <span class="setup-badge-optional">OPTIONAL</span></span>
-              <span class="setup-provider-model">Llama 3.1 8B — Ultra-fast inference</span>
-            </div>
-            <a href="https://console.groq.com/keys" target="_blank" class="setup-get-key">Get Key →</a>
-          </div>
-          <input type="password" id="setup_SARVIS_GROQ_API_KEY" placeholder="gsk_..." autocomplete="off">
+      <section class="view active" id="chatView">
+        <div class="chat" id="chatMessages">
+          <article class="message assistant"><div class="avatar">S</div><div><p class="message-label">SARVIS</p><p>Hello. Tell me what you want done on your computer.</p><p class="hint">Try: <b>open Notepad and write down a launch plan</b></p></div></article>
         </div>
+        <div class="composer-wrap">
+          <div class="quick-actions"><button class="quick" data-query="open calculator">Open Calculator</button><button class="quick" data-query="open notepad and write down a quick note">Write a note</button><button class="quick" data-query="build the project">Build project</button></div>
+          <div class="composer"><button class="icon-action" id="btnVoice" title="Voice input">Mic</button><input id="txtInput" aria-label="Ask SARVIS" placeholder="Ask SARVIS to do something..." autocomplete="off"><button class="send" id="btnSend" aria-label="Send">Send</button></div>
+          <div class="voice-status" id="voiceStatus"></div>
+        </div>
+      </section>
 
-        <!-- OpenRouter — optional -->
-        <div class="setup-field">
-          <div class="setup-field-header">
-            <div class="setup-field-info">
-              <span class="setup-provider-name">OpenRouter <span class="setup-badge-optional">OPTIONAL</span></span>
-              <span class="setup-provider-model">Auto model selection — Best of many</span>
-            </div>
-            <a href="https://openrouter.ai/keys" target="_blank" class="setup-get-key">Get Key →</a>
-          </div>
-          <input type="password" id="setup_SARVIS_OPENROUTER_API_KEY" placeholder="sk-or-v1-..." autocomplete="off">
+      <section class="view" id="controlsView">
+        <div class="section-head"><div><p class="eyebrow">LOCAL AUTOMATION</p><h2>Controls</h2></div><p class="section-copy">Shortcuts for the actions SARVIS can execute locally.</p></div>
+        <div class="control-grid">
+          <button class="control-card" data-command='{"category":"app","action":"launchApp","pkg":"chrome"}'><strong>Open browser</strong><span>Launch Chrome</span></button>
+          <button class="control-card" data-command='{"category":"app","action":"launchApp","pkg":"notepad"}'><strong>Open Notepad</strong><span>Launch a writing surface</span></button>
+          <button class="control-card" data-command='{"category":"app","action":"launchApp","pkg":"code"}'><strong>Open Code</strong><span>Launch your editor</span></button>
+          <button class="control-card" data-command='{"category":"system","action":"toggle","target":"volume_mute"}'><strong>Toggle mute</strong><span>Change system audio</span></button>
         </div>
+      </section>
 
-        <!-- Cerebras — optional -->
-        <div class="setup-field">
-          <div class="setup-field-header">
-            <div class="setup-field-info">
-              <span class="setup-provider-name">Cerebras <span class="setup-badge-optional">OPTIONAL</span></span>
-              <span class="setup-provider-model">Llama 3.1 8B — Hardware-accelerated</span>
-            </div>
-            <a href="https://inference.cerebras.ai/" target="_blank" class="setup-get-key">Get Key →</a>
+      <section class="view" id="keysView">
+        <div class="section-head"><div><p class="eyebrow">LOCAL CREDENTIAL VAULT</p><h2>API keys</h2></div><p class="section-copy">Add as many keys as you need. Values stay local and are never shown back.</p></div>
+        <div class="key-toolbar"><span id="keySummary">Loading keys...</span><button class="primary" id="btnAddKey">Add API key</button></div>
+        <div class="key-list" id="keysList"></div>
+        <form class="key-form hidden" id="keyForm">
+          <div class="form-heading"><div><p class="eyebrow">NEW CONNECTION</p><h3>Add an API key</h3></div><button type="button" class="quiet" id="btnCancelKey">Cancel</button></div>
+          <div class="form-grid">
+            <label>Label<input id="keyLabel" placeholder="My Gemini key"></label>
+            <label>Provider<input id="keyProvider" placeholder="gemini, openai, local..." required></label>
+            <label class="wide">Chat completions endpoint<input id="keyEndpoint" placeholder="https://api.example.com/v1/chat/completions" required></label>
+            <label>Model<input id="keyModel" placeholder="model-name" required></label>
+            <label>API key<input id="keySecret" type="password" placeholder="Paste key" required autocomplete="off"></label>
           </div>
-          <input type="password" id="setup_SARVIS_CEREBRAS_API_KEY" placeholder="csk-..." autocomplete="off">
-        </div>
-
-        <!-- Mistral — optional -->
-        <div class="setup-field">
-          <div class="setup-field-header">
-            <div class="setup-field-info">
-              <span class="setup-provider-name">Mistral <span class="setup-badge-optional">OPTIONAL</span></span>
-              <span class="setup-provider-model">Mistral Small — Efficient reasoning</span>
-            </div>
-            <a href="https://console.mistral.ai/" target="_blank" class="setup-get-key">Get Key →</a>
-          </div>
-          <input type="password" id="setup_SARVIS_MISTRAL_API_KEY" placeholder="..." autocomplete="off">
-        </div>
-
-        <!-- Together AI — optional -->
-        <div class="setup-field">
-          <div class="setup-field-header">
-            <div class="setup-field-info">
-              <span class="setup-provider-name">Together AI <span class="setup-badge-optional">OPTIONAL</span></span>
-              <span class="setup-provider-model">Llama 3.1 8B Instruct Turbo</span>
-            </div>
-            <a href="https://api.together.xyz/" target="_blank" class="setup-get-key">Get Key →</a>
-          </div>
-          <input type="password" id="setup_SARVIS_TOGETHER_API_KEY" placeholder="..." autocomplete="off">
-        </div>
-
-        <!-- Cohere — optional -->
-        <div class="setup-field">
-          <div class="setup-field-header">
-            <div class="setup-field-info">
-              <span class="setup-provider-name">Cohere <span class="setup-badge-optional">OPTIONAL</span></span>
-              <span class="setup-provider-model">Command R — Retrieval-optimized</span>
-            </div>
-            <a href="https://dashboard.cohere.ai/" target="_blank" class="setup-get-key">Get Key →</a>
-          </div>
-          <input type="password" id="setup_SARVIS_COHERE_API_KEY" placeholder="..." autocomplete="off">
-        </div>
-
-        <!-- DeepSeek — optional -->
-        <div class="setup-field">
-          <div class="setup-field-header">
-            <div class="setup-field-info">
-              <span class="setup-provider-name">DeepSeek <span class="setup-badge-optional">OPTIONAL</span></span>
-              <span class="setup-provider-model">DeepSeek Chat — Deep reasoning</span>
-            </div>
-            <a href="https://platform.deepseek.com/" target="_blank" class="setup-get-key">Get Key →</a>
-          </div>
-          <input type="password" id="setup_SARVIS_DEEPSEEK_API_KEY" placeholder="sk-..." autocomplete="off">
-        </div>
-
-        <!-- OpenCode Zen — optional -->
-        <div class="setup-field">
-          <div class="setup-field-header">
-            <div class="setup-field-info">
-              <span class="setup-provider-name">OpenCode Zen <span class="setup-badge-optional">OPTIONAL</span></span>
-              <span class="setup-provider-model">Nemotron 3 Ultra Free — OpenCode gateway</span>
-            </div>
-            <a href="https://opencode.ai/zen" target="_blank" class="setup-get-key">Get Key →</a>
-          </div>
-          <input type="password" id="setup_SARVIS_OPENCODE_ZEN_API_KEY" placeholder="oc_sk_..." autocomplete="off">
-        </div>
-
-        <div class="setup-actions">
-          <button type="submit" class="setup-submit-btn" id="setupSubmitBtn" disabled>
-            <span class="setup-submit-text">Save &amp; Launch SARVIS</span>
-            <svg class="setup-submit-arrow" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
-          </button>
-          <p class="setup-hint">Your keys are stored locally and never sent anywhere except the provider's own API.</p>
-        </div>
-      </form>
-    </div>
+          <div class="form-actions"><span class="form-note" id="keyFormStatus"></span><button class="primary" type="submit">Save key</button></div>
+        </form>
+      </section>
+    </main>
   </div>
 
-  <div class="app-container" id="appContainer">
-    <!-- Window Header / Title Bar -->
-    <header class="app-header">
-      <div class="header-brand">
-        <div class="brand-logo">
-          <div class="logo-core"></div>
-        </div>
-        <span class="brand-title">SARVIS <span class="brand-subtitle">Web Assistant</span></span>
-      </div>
-      <div class="header-status" id="activeProviderBadge">
-        <span class="status-dot green"></span>
-        <span class="status-text" id="activeProviderName">Rotator Ready</span>
-      </div>
-      <div class="header-actions">
-        <button class="icon-btn" id="btnMinimize" title="Minimize to Tray">
-          <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19 13H5v-2h14v2z"/></svg>
-        </button>
-        <button class="icon-btn danger" id="btnClose" title="Close App">
-          <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-        </button>
-      </div>
-    </header>
-
-    <!-- Main Body with Sidebar Navigation -->
-    <div class="app-body">
-      <!-- Sidebar -->
-      <aside class="sidebar">
-        <nav class="nav-menu">
-          <button class="nav-item active" data-tab="chatView">
-            <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
-            <span>Assistant</span>
-          </button>
-          <button class="nav-item" data-tab="rotatorView">
-            <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-            <span>9-Key Rotator</span>
-          </button>
-          <button class="nav-item" data-tab="controlsView">
-            <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
-            <span>Windows Control</span>
-          </button>
-          <button class="nav-item" data-tab="guardView">
-            <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
-            <span>Screen Guard</span>
-          </button>
-          <button class="nav-item" data-tab="settingsView">
-            <svg class="nav-icon" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-            <span>API Keys</span>
-          </button>
-        </nav>
-        <div class="sidebar-footer">
-          <div class="sys-info">
-            <span class="sys-label">Active App</span>
-            <span class="sys-val" id="lblActiveApp">Scanning...</span>
-          </div>
-        </div>
-      </aside>
-
-      <!-- View Containers -->
-      <main class="content-area">
-        <!-- 1. Assistant / Chat View -->
-        <section class="view-panel active" id="chatView">
-          <div class="chat-container">
-            <div class="chat-messages" id="chatMessages">
-              <div class="message assistant">
-                <div class="msg-avatar">J</div>
-                <div class="msg-content">
-                  Hello! I am **SARVIS**, your Windows personal assistant. How can I help you today? You can ask me to run Windows tasks, set reminders, check weather, search the web, or adjust volume and brightness.
-                </div>
-              </div>
-            </div>
-            <div class="chat-suggestions">
-              <button class="chip-btn" data-query="What is the weather today?">🌤️ Weather</button>
-              <button class="chip-btn" data-query="Remind me to submit report tomorrow at 9am">⏰ Remind me</button>
-              <button class="chip-btn" data-query="Turn up system volume">🔊 Volume Up</button>
-              <button class="chip-btn" data-query="Search Wikipedia for Quantum Computing">🌐 Wiki Search</button>
-            </div>
-            <div class="chat-input-bar">
-              <button class="mic-btn" id="btnVoice" title="Voice input (click = once, double-click = converse mode)">
-                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>
-              </button>
-              <input type="text" id="txtInput" placeholder="Ask SARVIS anything… (Enter to send)" autocomplete="off">
-              <button class="send-btn" id="btnSend" title="Send Message">
-                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <!-- 2. 9-Key Rotator Dashboard View -->
-        <section class="view-panel" id="rotatorView">
-          <div class="panel-header">
-            <h2>9-Key API Failover Rotator</h2>
-            <p>Monitors LLM key health and seamlessly switches providers on rate limits or errors.</p>
-          </div>
-          <div class="rotator-grid" id="rotatorGrid">
-            <!-- Dynamically populated by app.js -->
-          </div>
-          <div class="card log-card">
-            <h3>Rotation & Failover History</h3>
-            <div class="log-list" id="rotatorLog">
-              <div class="log-empty">No failovers logged yet. System running smoothly.</div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 3. Windows System Controls View -->
-        <section class="view-panel" id="controlsView">
-          <div class="panel-header">
-            <h2>Windows System Automation</h2>
-            <p>Directly control Windows system parameters, applications, and settings.</p>
-          </div>
-          <div class="controls-grid">
-            <div class="card control-card">
-              <h3>🔊 Audio Volume</h3>
-              <div class="action-row">
-                <button class="btn primary" id="btnVolDown">Vol -</button>
-                <button class="btn primary" id="btnVolMute">Mute Toggle</button>
-                <button class="btn primary" id="btnVolUp">Vol +</button>
-              </div>
-            </div>
-            <div class="card control-card">
-              <h3>☀️ Display Brightness</h3>
-              <div class="slider-row">
-                <input type="range" id="rngBrightness" min="0" max="255" value="128">
-                <span id="lblBrightnessVal">50%</span>
-              </div>
-            </div>
-            <div class="card control-card span-2">
-              <h3>🚀 Quick Application Launcher</h3>
-              <div class="app-launch-grid">
-                <button class="app-chip" data-app="chrome">🌐 Google Chrome</button>
-                <button class="app-chip" data-app="code">💻 VS Code</button>
-                <button class="app-chip" data-app="terminal">🖥️ Terminal</button>
-                <button class="app-chip" data-app="explorer">📁 File Explorer</button>
-                <button class="app-chip" data-app="calculator">🧮 Calculator</button>
-                <button class="app-chip" data-app="notepad">📝 Notepad</button>
-                <button class="app-chip" data-app="settings">⚙️ Windows Settings</button>
-                <button class="app-chip" data-app="spotify">🎵 Spotify</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 4. Screen Guard & Reminders View -->
-        <section class="view-panel" id="guardView">
-          <div class="panel-header">
-            <h2>Screen Guard & Tasks</h2>
-            <p>Monitors screen time usage on Windows and extracts voice task reminders.</p>
-          </div>
-          <div class="guard-layout">
-            <div class="card">
-              <h3>⏰ Active Voice Reminders</h3>
-              <div class="reminders-list" id="remindersList">
-                <div class="empty-state">No pending reminders set.</div>
-              </div>
-            </div>
-            <div class="card">
-              <h3>🛡️ Windows App Usage Watchdog</h3>
-              <div class="usage-list" id="usageList">
-                <div class="empty-state">Monitoring active Windows processes...</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 5. Settings / API Keys View -->
-        <section class="view-panel" id="settingsView">
-          <div class="panel-header">
-            <h2>API Key Management</h2>
-            <p>Configure your 9 provider API keys. At least one key is recommended for full AI capabilities.</p>
-            <button type="button" class="btn accent setup-reopen-btn" id="btnReconfigureKeys" style="margin-top:12px;">
-              <svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:middle;margin-right:6px;"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
-              Reconfigure API Keys
-            </button>
-          </div>
-          <form class="keys-form" id="keysForm">
-            <div class="key-field">
-              <label for="key_gemini">Google Gemini Key (Flash 3.1 Lite)</label>
-              <input type="password" id="SARVIS_GEMINI_API_KEY" placeholder="AIzaSy...">
-            </div>
-            <div class="key-field">
-              <label for="key_groq">Groq Key (Llama 3.1 8B)</label>
-              <input type="password" id="SARVIS_GROQ_API_KEY" placeholder="gsk_...">
-            </div>
-            <div class="key-field">
-              <label for="key_openrouter">OpenRouter Key</label>
-              <input type="password" id="SARVIS_OPENROUTER_API_KEY" placeholder="sk-or-v1-...">
-            </div>
-            <div class="key-field">
-              <label for="key_cerebras">Cerebras Key</label>
-              <input type="password" id="SARVIS_CEREBRAS_API_KEY" placeholder="csk-...">
-            </div>
-            <div class="key-field">
-              <label for="key_mistral">Mistral Key</label>
-              <input type="password" id="SARVIS_MISTRAL_API_KEY" placeholder="...">
-            </div>
-            <div class="key-field">
-              <label for="key_together">Together AI Key</label>
-              <input type="password" id="SARVIS_TOGETHER_API_KEY" placeholder="...">
-            </div>
-            <div class="key-field">
-              <label for="key_cohere">Cohere Key</label>
-              <input type="password" id="SARVIS_COHERE_API_KEY" placeholder="...">
-            </div>
-            <div class="key-field">
-              <label for="key_deepseek">DeepSeek Key</label>
-              <input type="password" id="SARVIS_DEEPSEEK_API_KEY" placeholder="sk-...">
-            </div>
-            <div class="key-field">
-              <label for="key_opencode_zen">OpenCode Zen Key (Nemotron Ultra)</label>
-              <input type="password" id="SARVIS_OPENCODE_ZEN_API_KEY" placeholder="nvapi-...">
-            </div>
-            <div class="form-actions">
-              <button type="submit" class="btn accent">Save API Keys</button>
-              <span class="save-status" id="lblSaveStatus"></span>
-            </div>
-          </form>
-        </section>
-      </main>
-    </div>
+  <div class="setup-overlay hidden" id="setupWizard">
+    <form class="setup-card" id="setupForm">
+      <span class="brand-mark large"></span><p class="eyebrow">FIRST RUN</p><h2>Connect your first brain</h2><p class="section-copy">Use any OpenAI-compatible provider. You can add unlimited keys later.</p>
+      <label>Label<input id="setupLabel" placeholder="Primary provider"></label>
+      <label>Provider<input id="setupProvider" placeholder="gemini" required></label>
+      <label>Endpoint<input id="setupEndpoint" value="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions" required></label>
+      <label>Model<input id="setupModel" value="gemini-3.1-flash-lite" required></label>
+      <label>API key<input id="setupSecret" type="password" placeholder="Paste your key" required autocomplete="off"></label>
+      <button class="primary" type="submit">Start SARVIS</button>
+      <button class="quiet" type="button" id="skipSetup">Use local mode</button>
+    </form>
   </div>
-
   <script src="app.js"></script>
 </body>
 </html>

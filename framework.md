@@ -2,7 +2,7 @@
 
 ## Overview
 
-SARVIS is a web-app AI assistant framework. It provides a modular architecture for building intelligent chat/voice applications with automation capabilities, running entirely in the browser with a Node.js/TypeScript backend.
+SARVIS is a personal computer agent framework with a minimalist browser client and a lightweight desktop shell. It provides a modular architecture for intelligent chat/voice applications with automation capabilities and a Node.js/TypeScript backend.
 
 ## Core Components
 
@@ -10,14 +10,14 @@ SARVIS is a web-app AI assistant framework. It provides a modular architecture f
 - **Location**: `src/`
 - **Purpose**: Central intelligence and orchestration
 - **Features**:
-  - 9-key API rotator for LLM failover
+  - Unlimited API-key rotator for LLM failover
   - Intent routing and conversation management
   - Device control orchestration
   - Screen time monitoring
   - Vision processing hooks
   - Free web tools integration
 
-### 2. Web App (Browser + Node server)
+### 2. Clients (Browser + Desktop + Node server)
 - **Location**: `src/ui/` + `src/server/webapp.ts`
 - **Purpose**: Chat/voice frontend served over HTTP
 - **Features**:
@@ -25,8 +25,9 @@ SARVIS is a web-app AI assistant framework. It provides a modular architecture f
   - Voice converse mode (single utterance + hands-free loop)
   - Spoken replies via SpeechSynthesis with on/off toggle
   - Live replies and screen-time nudges over WebSocket (`/ws`)
-  - API-key settings backed by `/api/keys`
+  - Unlimited dynamic API-key vault backed by `/api/keys`
   - Works in any modern browser — no install needed
+  - Electron desktop shell via `npm run start:app`
 
 ### 3. Communication Protocol
 - **Web UI**: HTTP JSON API (`/api/hear`, `/api/status`, `/api/keys`, `/api/command`) + WebSocket (`/ws`) on port 9742
@@ -47,7 +48,7 @@ SARVIS is a web-app AI assistant framework. It provides a modular architecture f
 ┌──────────────────────┼──────────────────────────────────┐
 │                      │         Brain (Node.js)          │
 │                      │  ┌──────────────────────────────┐ │
-│                      │  │  API Rotator (9-key failover)│ │
+│                      │  │ API Rotator (unlimited keys) │ │
 │                      │  └──────────────────────────────┘ │
 │                      │  ┌──────────────────────────────┐ │
 │                      │  │  Agent Brain (orchestration) │ │
@@ -69,7 +70,7 @@ SARVIS is a web-app AI assistant framework. It provides a modular architecture f
 
 ## Supported LLM Providers
 
-The framework supports failover across 9 different API providers:
+The framework supports failover across built-in providers and any number of custom OpenAI-compatible connections:
 
 1. Gemini
 2. Groq
@@ -80,6 +81,7 @@ The framework supports failover across 9 different API providers:
 7. Cohere
 8. DeepSeek
 9. OpenCode Zen (Nemotron 3 Ultra Free)
+10. Any custom endpoint and any number of additional keys
 
 ## Environment Configuration
 

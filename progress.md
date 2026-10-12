@@ -31,7 +31,7 @@
 - **Web UI dual transport** (`src/ui/app.js`): uses Electron IPC when present, else fetch + WebSocket with reconnect backoff; sending never silently fails (typing indicator, error messages, send locking, offline queue notice).
 - **Voice features (jarvis-mcp style)**: mic click = single utterance, double-click = hands-free converse loop (listen → reply aloud → listen…), 🔊/🔇 spoken-reply toggle (persisted), 🎙 voice-status badge (listening/thinking/speaking/conversing), live nudge messages.
 - **Offline brain**: `hear()` without keys now honors local paths (reminders, time/date); `APIRotatorService.complete()` returns degraded instead of throwing with zero keys.
-- **Provider consistency**: rotator limit 8→9 (OpenCode Zen), test updated; UI/docs say 9-Key.
+- **Provider consistency**: the former 9-key limit was later replaced by an unlimited custom-key vault.
 - Verify: ✅ `npm test` 41/41, ✅ `npm run build`, ✅ `dotnet build` 0 warnings/errors, ✅ web smoke test (health, UI, /api/hear reminder without keys, WS reply).
 
 ## 2026-10-09 (web-only: GUI apps removed)
@@ -73,3 +73,11 @@
 - Computer Use confirmed a real `Untitled - Notepad` window after the detached launch fix. Further Computer Use calls were stopped by the user's physical Escape key.
 - Fixed GUI launch aliases to use detached `start` commands, preventing SARVIS from waiting on Notepad or another GUI process.
 - Final verification: 46/46 tests, build pass, diff check pass.
+
+## 2026-10-12 (web and desktop product pass complete)
+- Added unlimited custom API-key storage in ignored `.sarvis-keys.json`; custom entries can use any provider, endpoint, model, and key.
+- Redacted API status metadata so the browser never receives key material.
+- Replaced the fixed settings surface with a minimalist dynamic API-key manager.
+- Added Electron desktop shell via `npm run start:app`; it shares the same UI and brain on port `9743`, while the browser remains on `9742`.
+- Verified the browser UI, API-key form, desktop process/window, desktop health endpoint, 14-key API smoke test, and final build/test gates.
+- Added `SARVIS App.lnk` on the Windows Desktop with a hidden launcher script for one-click desktop startup.

@@ -8,8 +8,8 @@
  *   GET  /api/health          -> { ok, uptime, providers, transport }
  *   GET  /api/status          -> rotator status, reminders, profile, screen guard
  *   POST /api/hear            -> { text } => { reply, degraded, ... }
- *   GET  /api/keys            -> { configured: { PROVIDER_ENV: boolean } }
- *   POST /api/keys            -> { updates: { ENV: value } } => saves to .env, reloads brain
+ *   GET  /api/keys            -> masked built-in and custom key metadata
+ *   POST /api/keys            -> { keys: [...] } saves the unlimited local key vault
  *   POST /api/command         -> { category, action, ... } => WinControl result
  *   GET  /api/active-window   -> active window info (best effort)
  *   WS   /ws                  -> { type:'hear', id, text } => { type:'reply', id, reply, degraded }
@@ -21,7 +21,7 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer, type WebSocket } from 'ws';
 import { JarvisBrain } from '../agent/brain.js';
-import { isUsableApiKey, loadDotEnvFile, loadKeysFromEnv, validateKeyFormats } from '../config/load_keys.js';
+import { isUsableApiKey, loadCustomKeys, loadDotEnvFile, loadKeysFromEnv, PROVIDERS, saveCustomKeys, validateKeyFormats, type StoredKeyInput } from '../config/load_keys.js';
 import { WinControlService } from '../services/win_control.js';
 import { WinScreenGuard } from '../services/win_screen_guard.js';
 
@@ -31,17 +31,7 @@ const __dirname = path.dirname(__filename);
 const PORT = Number(process.env.SARVIS_PORT ?? process.env.SARVIS_WEB_PORT ?? 9742);
 const HOST = process.env.SARVIS_BIND ?? '127.0.0.1';
 
-const KEY_ENVS = [
-  'SARVIS_GEMINI_API_KEY',
-  'SARVIS_GROQ_API_KEY',
-  'SARVIS_OPENROUTER_API_KEY',
-  'SARVIS_CEREBRAS_API_KEY',
-  'SARVIS_MISTRAL_API_KEY',
-  'SARVIS_TOGETHER_API_KEY',
-  'SARVIS_COHERE_API_KEY',
-  'SARVIS_DEEPSEEK_API_KEY',
-  'SARVIS_OPENCODE_ZEN_API_KEY',
-];
+const KEY_ENVS = PROVIDERS.map((provider) => provider.env);
 
 function getEnvFilePath(): string {
   return path.join(process.cwd(), '.env');
@@ -103,12 +93,13 @@ async function readBody(req: IncomingMessage): Promise<string> {
 async function main(): Promise<void> {
   const loadedEnvs = loadDotEnvFile();
   for (const w of validateKeyFormats()) console.warn(`SARVIS config: ${w}`);
-  if (loadedEnvs.length === 0) {
+  const initialKeys = loadKeysFromEnv();
+  if (initialKeys.length === 0) {
     console.warn('No SARVIS_*_API_KEY values found (.env or environment) — LLM path will run degraded/local fallback.');
   } else {
-    console.log(`SARVIS providers configured: ${loadedEnvs.map((e) => e.replace('SARVIS_', '').replace('_API_KEY', '').toLowerCase()).join(', ')}`);
+    console.log(`SARVIS keys configured: ${initialKeys.length} (${loadedEnvs.map((e) => e.replace('SARVIS_', '').replace('_API_KEY', '').toLowerCase()).join(', ')})`);
   }
-  let jarvis = new JarvisBrain({ keys: loadKeysFromEnv() });
+  let jarvis = new JarvisBrain({ keys: initialKeys });
   const winControl = new WinControlService();
   const winGuard = new WinScreenGuard();
   const startedAt = Date.now();
@@ -160,10 +151,32 @@ async function main(): Promise<void> {
       if (p === '/api/keys' && req.method === 'GET') {
         const configured: Record<string, boolean> = {};
         for (const k of KEY_ENVS) configured[k] = isUsableApiKey(process.env[k]);
-        return sendJson(res, 200, { configured });
+        const keys = jarvis.rotator.status().keys.map((key) => ({
+          id: key.id,
+          label: key.label ?? key.provider,
+          provider: key.provider,
+          endpoint: key.endpoint,
+          model: key.models[0] ?? 'default',
+          source: key.source ?? 'env',
+          configured: key.apiKey === 'configured',
+        }));
+        return sendJson(res, 200, { configured, keys, unlimited: true });
       }
       if (p === '/api/keys' && req.method === 'POST') {
-        const body = JSON.parse((await readBody(req)) || '{}') as { updates?: Record<string, string> };
+        const body = JSON.parse((await readBody(req)) || '{}') as { updates?: Record<string, string>; keys?: StoredKeyInput[] };
+        if (Array.isArray(body.keys)) {
+          const existing = new Map(loadCustomKeys().map((key) => [key.id, key]));
+          const entries = body.keys.map((entry) => {
+            const old = entry.id ? existing.get(entry.id) : undefined;
+            const masked = !entry.apiKey || entry.apiKey.startsWith('••••');
+            return { ...entry, apiKey: masked ? old?.apiKey : entry.apiKey };
+          });
+          saveCustomKeys(entries);
+          const old = jarvis;
+          jarvis = new JarvisBrain({ keys: loadKeysFromEnv() });
+          old.dispose();
+          return sendJson(res, 200, { success: true, providers: jarvis.rotator.keyCount, unlimited: true });
+        }
         const updates = body.updates ?? {};
         for (const [k, v] of Object.entries(updates)) {
           if (!KEY_ENVS.includes(k)) return sendJson(res, 400, { error: `unknown key: ${k}` });

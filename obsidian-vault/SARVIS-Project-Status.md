@@ -4,13 +4,13 @@
 
 SARVIS is shipped as a browser web app backed by a Node.js/TypeScript brain. The supported launch path is `npm run build` followed by `npm start`, which serves the UI at `http://localhost:9742`.
 
-The former Electron and WPF clients are retired from this repository. Windows controls and screen-time monitoring remain available through the web server's best-effort Windows integration.
+The former WPF client is retired. The supported desktop client is a lightweight Electron shell sharing the same web UI and brain; Windows controls and screen-time monitoring remain available through the local server.
 
 ## Completed
 
 ### Brain and Providers
 
-- [x] 9-provider API rotator with failover and cooldowns
+- [x] Unlimited API-key rotator with failover and cooldowns
 - [x] `.env` loading with placeholder-key rejection
 - [x] Gemini AQ and legacy API-key formats accepted
 - [x] Gemini 3.1 Flash Lite provider configuration
@@ -29,9 +29,10 @@ The former Electron and WPF clients are retired from this repository. Windows co
 - [x] Single-utterance voice mode and hands-free converse mode
 - [x] API-key setup wizard accepts any one configured provider
 - [x] Masked key status in the settings view
-- [x] 9-key provider dashboard and active-provider status
+- [x] Dynamic API-key dashboard with unlimited custom provider entries
 - [x] Windows command, active-window, and screen-guard endpoints
 - [x] HTML escaping before markdown rendering
+- [x] Minimal desktop shell and Windows Desktop shortcut (`SARVIS App.lnk`)
 - [x] Agentic computer control from natural-language chat: ordered app/URL, typing, file, and safe project-command tools
 - [x] Bounded workspace file writes and explicit rejection of arbitrary shell commands
 - [x] Detached Windows app launching for Notepad, Calculator, Chrome, Edge, Explorer, Paint, Word, and Code
@@ -56,8 +57,8 @@ The former Electron and WPF clients are retired from this repository. Windows co
 - [ ] Add CI for build, tests, and a browser smoke test
 - [ ] Add production authentication before exposing the server beyond localhost
 - [ ] Add a native camera/frame pipeline if vision input is required in the browser product
-- [ ] Add packaging/installer work if SARVIS needs a distributable desktop shell again
+- [ ] Add a signed installer if SARVIS needs a distributable desktop package
 
-**Project Status**: Web MVP plus agentic computer-control pass complete and verified
+**Project Status**: Web and desktop MVP plus agentic computer-control pass complete and verified
 **Next Milestone**: CI and production hardening
 **Last Verified**: 2026-10-12

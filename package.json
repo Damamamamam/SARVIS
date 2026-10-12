@@ -1,7 +1,7 @@
 {
   "name": "sarvis-brain",
   "version": "0.1.0",
-  "description": "SARVIS Web Assistant: 9-key API rotator, automation, intent routing, tools",
+  "description": "SARVIS personal computer agent with web and desktop clients",
   "main": "dist/src/server/webapp.js",
   "type": "module",
   "private": true,
@@ -10,6 +10,8 @@
     "copy-ui": "node -e \"const fs = require('fs'); fs.mkdirSync('dist/src/ui', { recursive: true }); fs.copyFileSync('src/ui/index.html', 'dist/src/ui/index.html'); fs.copyFileSync('src/ui/styles.css', 'dist/src/ui/styles.css'); fs.copyFileSync('src/ui/app.js', 'dist/src/ui/app.js');\"",
     "start": "node dist/src/server/webapp.js",
     "start:web": "node dist/src/server/webapp.js",
+    "start:app": "npm run build && electron src/electron/main.cjs",
+    "app": "npm run start:app",
     "start:server": "node dist/src/server/index.js",
     "dev": "npm run build && node dist/src/server/webapp.js",
     "dev:web": "npm run build && node dist/src/server/webapp.js",
@@ -26,6 +28,7 @@
   "devDependencies": {
     "@types/node": "^24.0.0",
     "@types/ws": "^8.18.1",
+    "electron": "^31.7.7",
     "typescript": "^5.5.0"
   }
 }

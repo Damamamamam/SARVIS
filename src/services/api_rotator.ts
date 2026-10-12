@@ -1,5 +1,5 @@
 /**
- * APIRotatorService — provider-agnostic 9-key failover rotator.
+ * APIRotatorService — provider-agnostic, unlimited-key failover rotator.
  *
  * Design invariants (see docs/architecture.md §4.1):
  *  - Exactly one key is ACTIVE at a time; all others are IDLE or COOLDOWN.
@@ -78,7 +78,6 @@ export class APIRotatorService {
       this.policy = { ...DEFAULT_POLICY, ...policy };
       return;
     }
-    if (keys.length > 9) throw new Error('APIRotatorService: at most 9 keys are supported');
     this.policy = { ...DEFAULT_POLICY, ...policy };
     this.keys = keys.map((k) => ({
       ...k,
@@ -102,7 +101,12 @@ export class APIRotatorService {
 
   /** Snapshot of all keys + policy (for dashboards / tests). */
   status(): { keys: ManagedKey[]; activeIndex: number; rotations: RotationEntry[] } {
-    return { keys: this.keys.map((k) => ({ ...k })), activeIndex: this.activeIndex, rotations: [...this.rotationLog] };
+    // API status is sent to the browser; never expose credential material.
+    return {
+      keys: this.keys.map((k) => ({ ...k, apiKey: 'configured' })),
+      activeIndex: this.activeIndex,
+      rotations: [...this.rotationLog],
+    };
   }
 
   /**
@@ -121,7 +125,9 @@ export class APIRotatorService {
     let currentIdx = this.activeIndex;
     if (currentIdx < 0) currentIdx = 0;
 
-    for (let attempt = 0; attempt < this.policy.maxRetries; attempt++) {
+    // Always visit every configured key once before degrading, even when the
+    // legacy retry policy is lower than the number of custom keys.
+    for (let attempt = 0; attempt < Math.max(this.policy.maxRetries, this.keys.length); attempt++) {
       const key = this.keys[currentIdx];
       if (key.state === 'COOLDOWN') {
         currentIdx = (currentIdx + 1) % this.keys.length;
@@ -154,7 +160,7 @@ export class APIRotatorService {
           currentIdx = next;
         }
 
-        if (attempt === this.policy.maxRetries - 1 || next < 0) {
+        if (attempt === Math.max(this.policy.maxRetries, this.keys.length) - 1 || next < 0) {
           return {
             ok: false,
             keyId: key.id,

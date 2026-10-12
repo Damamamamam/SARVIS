@@ -31,3 +31,8 @@
 - The web UI can call `/api/command`, but `AgentBrain.process()` never routed natural language into that service, so chat could only answer and not act.
 - The fix must keep computer actions bounded and observable: whitelist app aliases, allow `http(s)` URLs, restrict file writes to the project workspace, and permit only known project commands.
 - Multi-step requests should execute serially and stop on the first failure while returning the completed steps and failure detail to the UI.
+
+## App And Unlimited Keys (2026-10-12)
+- The current API rotator and UI are both hard-coded to nine provider slots.
+- Custom key entries need a separate local store so multiple keys can target the same provider or endpoint without inventing environment-variable names.
+- The desktop version can share the web server and UI through a small Electron shell, avoiding a second brain implementation and keeping web/app behavior consistent.

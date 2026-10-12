@@ -13,6 +13,7 @@ obj/
 
 # Environment and sensitive keys
 .env
+.sarvis-keys.json
 *.local
 
 # IDE & OS files
