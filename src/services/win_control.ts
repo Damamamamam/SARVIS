@@ -73,19 +73,34 @@ export class WinControlService {
     const clean = target.trim();
     // Common app alias resolution for Windows
     const aliases: Record<string, string> = {
-      chrome: 'chrome',
-      browser: 'start msedge',
-      calculator: 'calc',
-      notepad: 'notepad',
-      explorer: 'explorer',
+      chrome: 'start "" chrome.exe',
+      browser: 'start "" msedge.exe',
+      edge: 'start "" msedge.exe',
+      calculator: 'start "" calc.exe',
+      notepad: 'start "" notepad.exe',
+      explorer: 'start "" explorer.exe',
       cmd: 'start cmd',
       terminal: 'start wt',
-      settings: 'start ms-settings:',
-      spotify: 'start spotify',
-      code: 'code',
+      powershell: 'start "" powershell.exe',
+      settings: 'start "" ms-settings:',
+      spotify: 'start "" spotify',
+      paint: 'start "" mspaint.exe',
+      word: 'start "" winword.exe',
+      code: 'start "" code.cmd',
     };
     const command = aliases[clean.toLowerCase()] ?? `start "" "${clean}"`;
     await execAsync(command);
+  }
+
+  /** Open a browser URL through the Windows shell. */
+  async openUrl(url: string): Promise<void> {
+    if (!/^https?:\/\//i.test(url)) throw new Error('only http(s) URLs can be opened');
+    await execAsync(`start "" "${url.replace(/"/g, '')}"`);
+  }
+
+  /** Open a local file using its registered Windows application. */
+  async openPath(file: string): Promise<void> {
+    await execAsync(`start "" "${file.replace(/"/g, '')}"`);
   }
 
   /** Kill/close a Windows process by executable or process name. */

@@ -60,3 +60,16 @@
 - Added transient Gemini 503 retry, 512-token request budget, AQ-key validation, safe localhost default, setup wizard support for any provider, and HTML escaping.
 - Updated Obsidian project status for the web-only product and documented OpenCode free-tier external-call limitations.
 - Verification: `npm test` 43/43, `npm run build`, live `/api/health`, `/api/keys`, `/api/status`, `/api/hear`, browser UI, and reminder flow.
+
+## 2026-10-12 (agentic computer-control pass)
+- User reported that SARVIS responds once but is not a real agentic computer assistant.
+- Confirmed the server was alive with both providers configured; found that natural-language chat had no connection to Windows control or file operations.
+- Added a new bounded computer-agent phase: ordered plans, app/URL opening, foreground typing, workspace file creation/opening, and safe project command execution.
+
+## 2026-10-12 (agentic pass complete)
+- Added `ComputerAgent` and connected it before the LLM path in `AgentBrain`.
+- Live API sequence succeeded: opened Notepad and typed text, wrote a workspace note, and ran `npm run build`; `/api/health` stayed healthy after every command.
+- Browser UI automation sent `open calculator` and displayed `Completed 1 computer step: Opened calculator.`
+- Computer Use confirmed a real `Untitled - Notepad` window after the detached launch fix. Further Computer Use calls were stopped by the user's physical Escape key.
+- Fixed GUI launch aliases to use detached `start` commands, preventing SARVIS from waiting on Notepad or another GUI process.
+- Final verification: 46/46 tests, build pass, diff check pass.

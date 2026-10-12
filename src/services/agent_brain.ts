@@ -5,6 +5,7 @@
  * every LLM round-trip goes through APIRotatorService.
  */
 import { APIRotatorService } from './api_rotator.js';
+import { ComputerAgent, type ComputerStepResult } from '../agent/computer_agent.js';
 import type {
   BehaviorProfile,
   Conversation,
@@ -32,6 +33,7 @@ export interface AgentEvent {
 export interface BrainResult {
   reply: string;
   toolCalls?: ToolResult[];
+  agentSteps?: ComputerStepResult[];
   reminders?: Reminder[];
   events?: AgentEvent[];
   degraded?: boolean;
@@ -77,6 +79,7 @@ function atHour(n: Date, m: RegExpMatchArray): Date {
 
 export class AgentBrain {
   readonly rotator: APIRotatorService;
+  readonly computer: ComputerAgent;
   private conversation: Conversation;
   private reminders: Reminder[] = [];
   private screenTime: Map<string, ScreenTimeEntry> = new Map();
@@ -91,6 +94,7 @@ export class AgentBrain {
       ...config,
     };
     this.rotator = new APIRotatorService(config.keys);
+    this.computer = new ComputerAgent();
     this.conversation = { id: `conv_${Date.now().toString(36)}`, startedAtMs: Date.now(), transcript: [] };
     this.profile = {
       wakeWord: this.cfg.wakeWord,
@@ -144,6 +148,14 @@ export class AgentBrain {
   async process(utterance: string): Promise<BrainResult> {
     const events: AgentEvent[] = [];
     this.conversation.transcript.push({ role: 'user', content: utterance, tsMs: Date.now() });
+
+    // Action requests are handled locally before the LLM path so SARVIS can
+    // reliably operate the computer even when a provider is slow or down.
+    const agentResult = await this.computer.execute(utterance);
+    if (agentResult) {
+      this.conversation.transcript.push({ role: 'assistant', content: agentResult.reply, tsMs: Date.now() });
+      return { reply: agentResult.reply, agentSteps: agentResult.steps, events, degraded: false };
+    }
 
     // Local extraction — zero API cost, works even when all keys are degraded.
     const extracted = extractReminder(utterance);

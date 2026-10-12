@@ -26,3 +26,8 @@
 - Provider status was reading a duplicate rotator instead of the AgentBrain rotator that served requests.
 - `.env.example` values were counted as configured keys; OpenCode Zen used an obsolete NVIDIA endpoint; Gemini's initial model was retired or intermittently overloaded.
 - Fixed by sharing the live rotator, rejecting placeholders, using the OpenCode Zen gateway endpoint, selecting Gemini 3.1 Flash Lite, retrying transient 503s, and verifying the browser flow live.
+
+## Agentic Regression (2026-10-12)
+- The web UI can call `/api/command`, but `AgentBrain.process()` never routed natural language into that service, so chat could only answer and not act.
+- The fix must keep computer actions bounded and observable: whitelist app aliases, allow `http(s)` URLs, restrict file writes to the project workspace, and permit only known project commands.
+- Multi-step requests should execute serially and stop on the first failure while returning the completed steps and failure detail to the UI.

@@ -18,7 +18,7 @@ starts the server, and opens the browser.
 Complete.
 
 ## Next Step
-No required project work remains. Optional follow-ups are documented in the Obsidian status note.
+No required project work remains. Optional CI and production hardening are documented in the Obsidian status note.
 
 ## Phases
 ### Phase 1: Recover Status
@@ -47,6 +47,13 @@ Status: complete
 - Commit all project changes.
 - Push to origin.
 
+### Phase 5: Agentic Computer Control
+Status: complete
+- Add ordered local tool planning for opening apps/URLs, typing, file creation, file opening, and safe project commands.
+- Route agent tasks through the normal `hear` path and return step-by-step execution results.
+- Add parser/execution tests and run live browser + Computer Use verification.
+- Update the vault and push the verified fix to GitHub.
+
 ## Errors Encountered
 | Error | Attempt | Resolution |
 |-------|---------|------------|
@@ -58,3 +65,5 @@ Status: complete
 |----------|--------|
 | Preserve existing worktree changes | They include the active web-only product redirect and documentation updates |
 | Provider keys appeared configured but chat degraded | Reused the AgentBrain rotator for status, ignored placeholder values, corrected OpenCode Zen endpoint, and moved Gemini to the currently working model |
+| SARVIS answered but did not act on natural computer requests | Added a bounded computer-agent layer instead of exposing arbitrary shell execution through chat |
+| Direct GUI executable launch blocked the request while waiting for the app to exit | Switched GUI aliases to detached Windows `start` commands and verified a real Notepad window |

@@ -32,11 +32,14 @@ The former Electron and WPF clients are retired from this repository. Windows co
 - [x] 9-key provider dashboard and active-provider status
 - [x] Windows command, active-window, and screen-guard endpoints
 - [x] HTML escaping before markdown rendering
+- [x] Agentic computer control from natural-language chat: ordered app/URL, typing, file, and safe project-command tools
+- [x] Bounded workspace file writes and explicit rejection of arbitrary shell commands
+- [x] Detached Windows app launching for Notepad, Calculator, Chrome, Edge, Explorer, Paint, Word, and Code
 
 ### Operations and Documentation
 
 - [x] `npm run build` compiles TypeScript and copies UI assets
-- [x] `npm test` passes all 43 tests
+- [x] `npm test` passes all 46 tests
 - [x] Live browser smoke test passed for app load and reminder creation
 - [x] API health, key detection, status, and WebSocket routes verified
 - [x] Localhost is the safe default bind; LAN binding is opt-in with `SARVIS_BIND=0.0.0.0`
@@ -55,6 +58,6 @@ The former Electron and WPF clients are retired from this repository. Windows co
 - [ ] Add a native camera/frame pipeline if vision input is required in the browser product
 - [ ] Add packaging/installer work if SARVIS needs a distributable desktop shell again
 
-**Project Status**: Web MVP complete and verified
+**Project Status**: Web MVP plus agentic computer-control pass complete and verified
 **Next Milestone**: CI and production hardening
-**Last Verified**: 2026-10-11
+**Last Verified**: 2026-10-12
