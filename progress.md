@@ -99,3 +99,10 @@
 - Added separate delete controls for YouTube signals and imported search topics, plus full Google disconnect.
 - Documented that Google's private personalized home feed and direct My Activity history API are not available for silent third-party collection.
 - Verification: 52/52 tests passed, build passed, live health/setup/Google-status smoke passed, and the Profile & models UI rendered the consent controls.
+
+## 2026-10-13 (final Windows verification and handoff)
+- Attempted the requested Computer Use pass through both `node_repl`/`@oai/sky` and the fallback `cua_repl`; both failed before exposing Windows state with `failed to write kernel assets: The system cannot find the path specified. (os error 3)`.
+- Recorded the exact Computer Use limitation and every observed runtime/configuration error in `task_plan.md`.
+- Direct fallback checks passed: SARVIS desktop process/window present, desktop root and status returned 200, Start Menu and Desktop shortcuts exist, Google status correctly reported unconfigured, and unauthenticated YouTube feed returned the expected 401.
+- Live status exposed upstream provider issues for handoff: Gemini timed out and OpenCode reported that `nemotron-3-ultra-free` is unavailable.
+- Final gates: `npm test` 52/52 passed, `npm run build` passed, and `git diff --check` passed.

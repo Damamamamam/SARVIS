@@ -18,7 +18,7 @@ starts the server, and opens the browser.
 Complete.
 
 ## Next Step
-No required project work remains. Google Cloud OAuth credentials are the only environment-specific setup; optional CI and production hardening remain documented.
+No required code work remains for this pass. Handoff items are the Computer Use host-runtime failure, upstream provider availability, and optional Google OAuth configuration.
 
 ## Phases
 ### Phase 1: Recover Status
@@ -83,11 +83,26 @@ Status: complete
 - Add an explicit Google My Activity/Takeout search-topic import because direct history API access is unavailable.
 - Add connected-source status, consent copy, disconnect/delete controls, tests, and documentation.
 
+### Phase 10: Windows Computer Use Verification
+Status: complete_with_limitations
+- Launch the desktop app through the installed Windows workflow.
+- Exercise setup/profile/model/API-key and agent-control paths through Computer Use.
+- Record every observed error, unavailable integration, and environment-only limitation.
+- Rerun automated tests/build, update progress notes, and push the handoff state.
+- Direct fallback verification: desktop process/window, root/status/setup/auth endpoints, shortcuts, build, tests, and diff check all passed.
+- Computer Use UI interaction was blocked before app inspection by the host runtime error recorded below.
+
 ## Errors Encountered
 | Error | Attempt | Resolution |
 |-------|---------|------------|
 | Computer Use Antigravity launch did not immediately expose a window | Launch via Computer Use | Re-listed windows and located the target Antigravity window |
 | Windows build missing `System.Management` | First `dotnet build` | Added package reference |
+| Computer Use `node_repl` could not initialize: `failed to write kernel assets: The system cannot find the path specified. (os error 3)` | Windows UI verification initialization, including one clean kernel reset and retry | Logged as an environment limitation; continued with the available Computer Use surface and terminal verification |
+| Computer Use `cua_repl` reported the same kernel-assets path error before exposing any Windows state | Fallback Computer Use surface initialization | Logged as the same host/runtime limitation; no UI interaction was claimed |
+| Gemini provider timed out during the live desktop status run; rotator recorded `cooldown: timeout` | `/api/status` after the running desktop process had attempted provider work | Logged as an upstream/runtime provider failure; code/test gates still pass and the rotator exposes cooldown state |
+| OpenCode provider returned `HTTP 400: Upstream request failed: Model is unavailable.` for `nemotron-3-ultra-free` | Same live desktop provider run | Logged for handoff; replace the configured model with one currently available to that OpenCode account |
+| YouTube feed returned `401 Unauthorized` without a signed-in Google/YouTube session | `GET /api/integrations/youtube/feed` without OAuth credentials | Expected consent/auth protection, not a code regression; Google OAuth remains unconfigured in this environment |
+| `GET /api/setup/profile` returned `404 Not Found` | Endpoint smoke probe used the wrong HTTP method | Endpoint is POST-only by design; no code change needed |
 
 ## Decisions Made
 | Decision | Reason |
