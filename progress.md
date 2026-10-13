@@ -81,3 +81,13 @@
 - Added Electron desktop shell via `npm run start:app`; it shares the same UI and brain on port `9743`, while the browser remains on `9742`.
 - Verified the browser UI, API-key form, desktop process/window, desktop health endpoint, 14-key API smoke test, and final build/test gates.
 - Added `SARVIS App.lnk` on the Windows Desktop with a hidden launcher script for one-click desktop startup.
+
+## 2026-10-13 (awareness and personal setup pass)
+- Added a consent-first local awareness scanner. It inventories app names and file metadata only; it never reads document contents, messages, browser history, passwords, or API keys.
+- Added local `.sarvis-profile.json` and `.sarvis-settings.json` stores, both ignored by Git.
+- Added a first-run three-step flow: permission choice, five-question personality quiz, and editable profile confirmation.
+- Added `/api/setup`, `/api/setup/scan`, `/api/setup/profile`, and `/api/settings` endpoints.
+- Added separate brain-model and voice-input-model selectors in the Profile & models view.
+- Passed the browser UI flow for scan, quiz, profile confirmation, and model saving.
+- Added remote voice transcription routing for selected compatible models, with browser-native local voice as the default and fallback.
+- Verification: 50/50 tests passed, build passed, live setup/settings API smoke passed, browser UI smoke passed.

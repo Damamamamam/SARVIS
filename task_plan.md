@@ -18,7 +18,7 @@ starts the server, and opens the browser.
 Complete.
 
 ## Next Step
-No required project work remains. Optional CI, packaging, and production hardening are documented in the project notes.
+No required project work remains. Optional CI, production authentication, remote voice transcription, and signed packaging are documented in the project notes.
 
 ## Phases
 ### Phase 1: Recover Status
@@ -60,6 +60,21 @@ Status: complete
 - Replace the fixed provider settings UI with a minimal dynamic key manager.
 - Add a minimal desktop app shell that shares the web UI and brain.
 - Run build, tests, web smoke checks, and desktop launch verification before pushing.
+
+### Phase 7: Consentful Awareness And Personal Setup
+Status: complete
+- Add metadata-only app/file awareness behind explicit user consent.
+- Persist the confirmed user profile and use it as bounded LLM context.
+- Add a first-run personality quiz with a review/correction step.
+- Add separate brain-model and voice-input-model settings.
+- Add setup/status APIs, a re-run setup control, tests, and documentation.
+
+## Phase 8: Final Awareness Verification
+Status: complete
+- Build and test the consentful setup implementation.
+- Verify setup, scan, profile, and model settings APIs with a live server.
+- Verify the browser quiz/review/model workflow.
+- Remove temporary smoke-test profile data and update project notes.
 
 ## Errors Encountered
 | Error | Attempt | Resolution |

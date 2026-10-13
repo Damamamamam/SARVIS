@@ -18,6 +18,7 @@
         <button class="nav-item active" data-tab="chatView">Conversation</button>
         <button class="nav-item" data-tab="controlsView">Controls</button>
         <button class="nav-item" data-tab="keysView">API keys</button>
+        <button class="nav-item" data-tab="profileView">Profile & models</button>
       </nav>
       <div class="sidebar-foot"><span class="pulse"></span><span id="activeProviderName">Checking brain</span></div>
     </aside>
@@ -65,19 +66,41 @@
           <div class="form-actions"><span class="form-note" id="keyFormStatus"></span><button class="primary" type="submit">Save key</button></div>
         </form>
       </section>
+
+      <section class="view" id="profileView">
+        <div class="section-head"><div><p class="eyebrow">PERSONAL CONTEXT</p><h2>Profile & models</h2></div><p class="section-copy">Review what SARVIS knows, change how it speaks, and choose separate models for the brain and voice input.</p></div>
+        <div class="profile-grid">
+          <article class="profile-card"><p class="eyebrow">CONFIRMED PROFILE</p><h3 id="profileName">Not set up</h3><p id="profileSummary" class="section-copy">Run the setup conversation to build a user profile.</p><button class="primary" id="btnRerunSetup">Run setup again</button></article>
+          <article class="profile-card"><p class="eyebrow">MODEL ROUTING</p><label>Brain model<select id="brainModel"></select></label><label>Voice input model<select id="voiceInputModel"></select></label><p class="form-note">Browser native is private and works immediately. Remote choices record a short clip and send it to the selected provider's compatible transcription endpoint.</p><button class="primary" id="btnSaveSettings">Save model choices</button><span class="form-note" id="settingsStatus"></span></article>
+        </div>
+        <article class="awareness-card"><div><p class="eyebrow">LOCAL AWARENESS</p><h3>What SARVIS can see</h3><p id="awarenessSummary" class="section-copy">No awareness snapshot yet.</p></div><button class="quiet" id="btnRefreshAwareness">Refresh metadata</button></article>
+      </section>
     </main>
   </div>
 
   <div class="setup-overlay hidden" id="setupWizard">
     <form class="setup-card" id="setupForm">
-      <span class="brand-mark large"></span><p class="eyebrow">FIRST RUN</p><h2>Connect your first brain</h2><p class="section-copy">Use any OpenAI-compatible provider. You can add unlimited keys later.</p>
-      <label>Label<input id="setupLabel" placeholder="Primary provider"></label>
-      <label>Provider<input id="setupProvider" placeholder="gemini" required></label>
-      <label>Endpoint<input id="setupEndpoint" value="https://generativelanguage.googleapis.com/v1beta/openai/chat/completions" required></label>
-      <label>Model<input id="setupModel" value="gemini-3.1-flash-lite" required></label>
-      <label>API key<input id="setupSecret" type="password" placeholder="Paste your key" required autocomplete="off"></label>
-      <button class="primary" type="submit">Start SARVIS</button>
-      <button class="quiet" type="button" id="skipSetup">Use local mode</button>
+      <div class="setup-step" data-setup-step="consent">
+        <span class="brand-mark large"></span><p class="eyebrow">FIRST RUN · 1 OF 3</p><h2>Let SARVIS understand your workspace</h2><p class="section-copy">I can learn your environment without opening private documents. This scan reads app names and file metadata only, never file contents, passwords, messages, browser history, or API keys.</p>
+        <label class="check-row"><input id="consentApps" type="checkbox" checked><span><strong>App awareness</strong><small>Installed shortcuts and currently running app names</small></span></label>
+        <label class="check-row"><input id="consentFiles" type="checkbox" checked><span><strong>File awareness</strong><small>Folder counts, file counts, and extensions in Desktop, Documents, Downloads, and this workspace</small></span></label>
+        <div class="form-actions"><span class="form-note" id="scanStatus"></span><button class="primary" type="button" id="btnScanContext">Scan with my permission</button></div>
+        <button class="quiet" type="button" id="skipScan">Skip scan and continue</button>
+      </div>
+      <div class="setup-step hidden" data-setup-step="quiz">
+        <p class="eyebrow">FIRST RUN · 2 OF 3</p><h2>How should I work with you?</h2><p class="section-copy">There are no wrong answers. This gives SARVIS a starting point that you can correct before anything is saved.</p>
+        <div id="quizQuestions" class="quiz-list"></div>
+        <div class="form-actions"><button class="quiet" type="button" id="backToConsent">Back</button><button class="primary" type="button" id="btnReviewProfile">Review my profile</button></div>
+      </div>
+      <div class="setup-step hidden" data-setup-step="review">
+        <p class="eyebrow">FIRST RUN · 3 OF 3</p><h2>Does this sound like you?</h2><p class="section-copy">Edit anything that is wrong. SARVIS only keeps this after you confirm.</p>
+        <label>Your name (optional)<input id="setupName" placeholder="What should SARVIS call you?"></label>
+        <label>What do you do? (optional)<input id="setupRole" placeholder="Student, developer, researcher..."></label>
+        <div class="profile-preview" id="profilePreview"></div>
+        <div class="form-grid"><label>Brain model<select id="setupBrainModel"></select></label><label>Voice input model<select id="setupVoiceModel"></select></label></div>
+        <div class="form-actions"><button class="quiet" type="button" id="backToQuiz">Back</button><button class="primary" type="submit">Confirm and start SARVIS</button></div>
+        <button class="quiet" type="button" id="skipProfile">Continue without saving a profile</button>
+      </div>
     </form>
   </div>
   <script src="app.js"></script>

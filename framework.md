@@ -26,10 +26,19 @@ SARVIS is a personal computer agent framework with a minimalist browser client a
   - Spoken replies via SpeechSynthesis with on/off toggle
   - Live replies and screen-time nudges over WebSocket (`/ws`)
   - Unlimited dynamic API-key vault backed by `/api/keys`
+  - Consentful first-run awareness scan for app/file metadata only
+  - Personality quiz with reviewable local user profile
+  - Separate reasoning-brain and voice-input model preferences
   - Works in any modern browser — no install needed
   - Electron desktop shell via `npm run start:app`
 
-### 3. Communication Protocol
+### 3. Local Context And Model Preferences
+- **Location**: `src/services/user_context.ts` + `/api/setup*` and `/api/settings`
+- **Purpose**: Make SARVIS aware of its environment without silently reading private content
+- **Boundary**: app names, running process names, folder/file counts, and extensions only; no document contents, messages, browser history, passwords, or API keys
+- **Persistence**: `.sarvis-profile.json` and `.sarvis-settings.json`, both ignored by Git
+
+### 4. Communication Protocol
 - **Web UI**: HTTP JSON API (`/api/hear`, `/api/status`, `/api/keys`, `/api/command`) + WebSocket (`/ws`) on port 9742
 - **Headless bridge**: WebSocket (`ws://localhost:9741`) with JSON envelopes and module-based routing
 - **Modules**: `audio`, `vision`, `screen`, `device`, `voice`

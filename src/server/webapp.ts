@@ -21,7 +21,8 @@ import * as path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer, type WebSocket } from 'ws';
 import { JarvisBrain } from '../agent/brain.js';
-import { isUsableApiKey, loadCustomKeys, loadDotEnvFile, loadKeysFromEnv, PROVIDERS, saveCustomKeys, validateKeyFormats, type StoredKeyInput } from '../config/load_keys.js';
+import { getAvailableModels, isUsableApiKey, loadCustomKeys, loadDotEnvFile, loadKeysFromEnv, PROVIDERS, saveCustomKeys, validateKeyFormats, type StoredKeyInput } from '../config/load_keys.js';
+import { loadSettings, loadUserProfile, saveSettings, saveUserProfile, scanLocalAwareness, type SarvisSettings, type UserProfile } from '../services/user_context.js';
 import { WinControlService } from '../services/win_control.js';
 import { WinScreenGuard } from '../services/win_screen_guard.js';
 
@@ -84,10 +85,35 @@ function sendJson(res: ServerResponse, status: number, data: unknown): void {
   res.end(JSON.stringify(data));
 }
 
+function buildUserContext(profile: UserProfile): string | undefined {
+  if (!profile.setupComplete) return undefined;
+  const awareness = profile.awareness;
+  const appSummary = awareness?.apps
+    ? `Installed app names: ${awareness.apps.installed.slice(0, 80).join(', ') || 'none recorded'}. Running apps at setup: ${awareness.apps.running.slice(0, 40).join(', ') || 'none recorded'}.`
+    : 'App inventory was not granted.';
+  const fileSummary = awareness?.files
+    ? `File metadata summary: ${awareness.files.files} files across ${awareness.files.folders} folders; roots ${awareness.files.roots.map((root) => path.basename(root)).join(', ') || 'none'}; common extensions ${Object.entries(awareness.files.extensions).sort((a, b) => b[1] - a[1]).slice(0, 12).map(([ext, count]) => `${ext} (${count})`).join(', ') || 'none'}.`
+    : 'File metadata inventory was not granted.';
+  return [
+    'You are SARVIS, a local computer assistant. This is user-confirmed context, not a license to guess or claim access to private content.',
+    `The user${profile.displayName ? ` is ${profile.displayName}` : ''}${profile.role ? ` and describes their role as ${profile.role}` : ''}.`,
+    `Their preferred traits are ${profile.traits.join(', ') || 'not specified'} and their preferred tone is ${profile.tone}.`,
+    appSummary,
+    fileSummary,
+    'Use this context to tailor suggestions, but ask before taking consequential actions and never infer sensitive traits from app names or file types.',
+  ].join(' ');
+}
+
 async function readBody(req: IncomingMessage): Promise<string> {
   const chunks: Buffer[] = [];
   for await (const c of req) chunks.push(c as Buffer);
   return Buffer.concat(chunks).toString('utf-8');
+}
+
+async function readBuffer(req: IncomingMessage): Promise<Buffer> {
+  const chunks: Buffer[] = [];
+  for await (const c of req) chunks.push(c as Buffer);
+  return Buffer.concat(chunks);
 }
 
 async function main(): Promise<void> {
@@ -99,7 +125,25 @@ async function main(): Promise<void> {
   } else {
     console.log(`SARVIS keys configured: ${initialKeys.length} (${loadedEnvs.map((e) => e.replace('SARVIS_', '').replace('_API_KEY', '').toLowerCase()).join(', ')})`);
   }
-  let jarvis = new JarvisBrain({ keys: initialKeys });
+  let userProfile = loadUserProfile();
+  let settings = loadSettings();
+  const createBrain = () => new JarvisBrain({
+    keys: loadKeysFromEnv(),
+    brainConfig: {
+      ownerName: userProfile.displayName,
+      brainModel: settings.brainModel,
+      userContext: buildUserContext(userProfile),
+      profile: {
+        ownerName: userProfile.displayName,
+        role: userProfile.role,
+        traits: userProfile.traits,
+        tone: userProfile.tone,
+        setupComplete: userProfile.setupComplete,
+        awareness: userProfile.awareness,
+      },
+    },
+  });
+  let jarvis = createBrain();
   const winControl = new WinControlService();
   const winGuard = new WinScreenGuard();
   const startedAt = Date.now();
@@ -138,8 +182,61 @@ async function main(): Promise<void> {
           rotator: jarvis.rotator.status(),
           pendingReminders: jarvis.brain.pendingReminders(),
           profile: jarvis.brain.profileSnapshot,
+          userProfile,
+          settings,
           screenGuard: winGuard.snapshot(),
         });
+      }
+      if (p === '/api/setup' && req.method === 'GET') {
+        return sendJson(res, 200, {
+          setupRequired: !userProfile.setupComplete,
+          profile: userProfile,
+          settings,
+          models: getAvailableModels(loadKeysFromEnv()),
+        });
+      }
+      if (p === '/api/setup/scan' && req.method === 'POST') {
+        const body = JSON.parse((await readBody(req)) || '{}') as { consent?: { apps?: boolean; files?: boolean } };
+        const consent = { apps: Boolean(body.consent?.apps), files: Boolean(body.consent?.files) };
+        const awareness = await scanLocalAwareness({ consent });
+        userProfile = saveUserProfile({ ...userProfile, awareness });
+        return sendJson(res, 200, { success: true, awareness });
+      }
+      if (p === '/api/setup/profile' && req.method === 'POST') {
+        const body = JSON.parse((await readBody(req)) || '{}') as {
+          displayName?: string; role?: string; traits?: string[]; tone?: UserProfile['tone']; answers?: UserProfile['answers'];
+          brainModel?: string; voiceInputModel?: string;
+        };
+        const tone = body.tone === 'CHEERFUL' || body.tone === 'FORMAL' ? body.tone : 'CALM';
+        userProfile = saveUserProfile({
+          ...userProfile,
+          setupComplete: true,
+          displayName: body.displayName?.trim().slice(0, 80) || undefined,
+          role: body.role?.trim().slice(0, 120) || undefined,
+          traits: Array.isArray(body.traits) ? body.traits.filter((trait): trait is string => typeof trait === 'string').slice(0, 8) : [],
+          tone,
+          answers: body.answers,
+          confirmedAt: new Date().toISOString(),
+        });
+        settings = saveSettings({
+          brainModel: body.brainModel?.trim() || settings.brainModel,
+          voiceInputModel: body.voiceInputModel?.trim() || settings.voiceInputModel,
+        });
+        const old = jarvis;
+        jarvis = createBrain();
+        old.dispose();
+        return sendJson(res, 200, { success: true, profile: userProfile, settings });
+      }
+      if (p === '/api/settings' && req.method === 'POST') {
+        const body = JSON.parse((await readBody(req)) || '{}') as Partial<SarvisSettings>;
+        settings = saveSettings({
+          brainModel: typeof body.brainModel === 'string' ? body.brainModel : settings.brainModel,
+          voiceInputModel: typeof body.voiceInputModel === 'string' ? body.voiceInputModel : settings.voiceInputModel,
+        });
+        const old = jarvis;
+        jarvis = createBrain();
+        old.dispose();
+        return sendJson(res, 200, { success: true, settings, models: getAvailableModels(loadKeysFromEnv()) });
       }
       if (p === '/api/hear' && req.method === 'POST') {
         const body = JSON.parse((await readBody(req)) || '{}') as { text?: string };
@@ -147,6 +244,13 @@ async function main(): Promise<void> {
         if (!text) return sendJson(res, 400, { error: 'text is required' });
         const result = await jarvis.hear(text);
         return sendJson(res, 200, result);
+      }
+      if (p === '/api/voice/transcribe' && req.method === 'POST') {
+        if (settings.voiceInputModel === 'browser-native') return sendJson(res, 400, { error: 'Select a remote voice model before uploading audio.' });
+        const audio = await readBuffer(req);
+        if (!audio.length) return sendJson(res, 400, { error: 'audio is required' });
+        const result = await jarvis.rotator.transcribe(audio, String(req.headers['content-type'] ?? 'audio/webm'), settings.voiceInputModel);
+        return sendJson(res, result.ok ? 200 : 502, result);
       }
       if (p === '/api/keys' && req.method === 'GET') {
         const configured: Record<string, boolean> = {};
@@ -173,7 +277,7 @@ async function main(): Promise<void> {
           });
           saveCustomKeys(entries);
           const old = jarvis;
-          jarvis = new JarvisBrain({ keys: loadKeysFromEnv() });
+          jarvis = createBrain();
           old.dispose();
           return sendJson(res, 200, { success: true, providers: jarvis.rotator.keyCount, unlimited: true });
         }
@@ -184,7 +288,7 @@ async function main(): Promise<void> {
         }
         updateEnvFile(getEnvFilePath(), updates);
         const old = jarvis;
-        jarvis = new JarvisBrain({ keys: loadKeysFromEnv() });
+        jarvis = createBrain();
         old.dispose();
         return sendJson(res, 200, { success: true, providers: jarvis.rotator.keyCount });
       }

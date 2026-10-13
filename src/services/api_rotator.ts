@@ -185,6 +185,32 @@ export class APIRotatorService {
     };
   }
 
+  /** Transcribe a browser-recorded audio clip through an OpenAI-compatible provider. */
+  async transcribe(audio: Uint8Array, mimeType: string, model: string): Promise<{ ok: boolean; text?: string; error?: string; provider?: string }> {
+    if (!model || model === 'browser-native') return { ok: false, error: 'browser-native voice input does not use server transcription' };
+    if (this.keys.length === 0) return { ok: false, error: 'no keys configured' };
+    let currentIdx = this.activeIndex >= 0 ? this.activeIndex : 0;
+    for (let attempt = 0; attempt < this.keys.length; attempt += 1) {
+      const key = this.keys[currentIdx];
+      if (key.state === 'COOLDOWN') { currentIdx = (currentIdx + 1) % this.keys.length; continue; }
+      try {
+        const text = await this.callTranscription(key, audio, mimeType, model);
+        key.stats.calls += 1;
+        key.stats.lastUsedMs = this.now();
+        this.activateKey(currentIdx);
+        return { ok: true, text, provider: key.provider };
+      } catch (err) {
+        const failure = normalizeFailure(err);
+        key.stats.failures += 1;
+        this.sendToCooldown(key, failure.reason);
+        const next = this.nextAvailableIndex(currentIdx);
+        if (next < 0) return { ok: false, error: failure.reason, provider: key.provider };
+        currentIdx = next;
+      }
+    }
+    return { ok: false, error: 'all voice providers exhausted' };
+  }
+
   /** Force the rotator to cycle to the next healthy key (manual override). */
   rotate(force = false): ManagedKey | null {
     if (!force && this.keys.length <= 1) return null;
@@ -309,6 +335,35 @@ export class APIRotatorService {
       const data = (await res.json()) as ChatCompletion;
       if (!data?.choices?.length) throw new Failure('empty completion payload');
       return data;
+    } catch (err) {
+      if (controller.signal.aborted) throw new Failure('timeout', 0);
+      throw err;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  private async callTranscription(key: ManagedKey, audio: Uint8Array, mimeType: string, model: string): Promise<string> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), this.policy.timeoutMs);
+    try {
+      const form = new FormData();
+      const audioBuffer = new Uint8Array(audio).buffer as ArrayBuffer;
+      form.append('file', new Blob([audioBuffer], { type: mimeType || 'audio/webm' }), 'sarvis-voice.webm');
+      form.append('model', model);
+      const res = await fetch(key.endpoint.replace(/chat\/completions\/?$/i, 'audio/transcriptions'), {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${key.apiKey}` },
+        body: form,
+        signal: controller.signal,
+      });
+      if (res.status === 429) throw new Failure('rate limit', 429);
+      if (res.status >= 500) throw new Failure(`server error ${res.status}`, res.status);
+      if (!res.ok) throw new Failure(`HTTP ${res.status}: ${(await res.text()).slice(0, 200)}`, res.status);
+      const data = await res.json() as { text?: string; transcription?: string };
+      const text = data.text ?? data.transcription;
+      if (!text?.trim()) throw new Failure('empty transcription payload');
+      return text.trim();
     } catch (err) {
       if (controller.signal.aborted) throw new Failure('timeout', 0);
       throw err;

@@ -36,3 +36,9 @@
 - The current API rotator and UI are both hard-coded to nine provider slots.
 - Custom key entries need a separate local store so multiple keys can target the same provider or endpoint without inventing environment-variable names.
 - The desktop version can share the web server and UI through a small Electron shell, avoiding a second brain implementation and keeping web/app behavior consistent.
+
+## Awareness And Setup (2026-10-13)
+- SARVIS now needs a real setup state rather than treating API-key presence as first-run completion.
+- The awareness boundary is metadata-only and consented: installed/running app names plus file counts, folder counts, extensions, and selected root names. Raw files and secrets are not included in the model context.
+- The profile is reviewable before persistence and can be rerun from the Profile & models view.
+- The selected reasoning model is passed into the rotator request; `auto` preserves normal failover behavior. Voice input preferences are persisted separately, with browser-native recognition as the working private default.

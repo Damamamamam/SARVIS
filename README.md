@@ -2,6 +2,12 @@
 
 SARVIS is a personal computer agent with a Node.js/TypeScript brain, a minimalist web client, and a lightweight desktop app. It supports chat, voice input, system automation, screen-time monitoring, and an unlimited local vault of API keys.
 
+## First-run awareness and profile
+
+On first boot SARVIS opens a setup conversation. The user explicitly chooses whether SARVIS may inventory app metadata and file metadata. The scan records app names, running process names, folder/file counts, and extensions in common workspace folders, but never reads document contents, browser history, messages, passwords, or API keys. A short personality quiz proposes a working profile for the user to review and correct before it is saved locally in `.sarvis-profile.json`.
+
+The **Profile & models** view can rerun setup, refresh the metadata snapshot, and choose separate models for the reasoning brain and voice input. Preferences are stored locally in `.sarvis-settings.json`; `browser-native` voice input remains the private, immediately available option.
+
 ## 🏗️ Architecture
 
 - **Web App**: Browser chat UI (HTML5, CSS3 glassmorphism, vanilla JS) served by the Node server, with live WebSocket replies and screen-time nudges.
@@ -35,7 +41,7 @@ The desktop shell starts its private local brain on `http://127.0.0.1:9743`. The
 
 On Windows, `SARVIS App.lnk` on the Desktop launches the same app without leaving a terminal window open.
 
-> **First-Time Setup**: On first launch with no usable API keys configured, SARVIS shows a setup wizard. Add any provider or OpenAI-compatible endpoint, then add unlimited additional keys from the **API keys** tab. Values copied from `.env.example` are ignored until replaced with real keys.
+> **First-Time Setup**: On first launch SARVIS opens a consentful awareness and personality setup. API keys are optional for local mode; add any provider or OpenAI-compatible endpoint from the **API keys** tab, then add unlimited additional keys. Values copied from `.env.example` are ignored until replaced with real keys.
 
 Set `SARVIS_PORT` / `SARVIS_BIND` env vars to change host/port. The default bind is `127.0.0.1` because the settings endpoint accepts API keys; use `SARVIS_BIND=0.0.0.0` only on a trusted network.
 

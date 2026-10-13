@@ -36,11 +36,15 @@ The former WPF client is retired. The supported desktop client is a lightweight 
 - [x] Agentic computer control from natural-language chat: ordered app/URL, typing, file, and safe project-command tools
 - [x] Bounded workspace file writes and explicit rejection of arbitrary shell commands
 - [x] Detached Windows app launching for Notepad, Calculator, Chrome, Edge, Explorer, Paint, Word, and Code
+- [x] Consentful first-run awareness scan for app and file metadata
+- [x] Five-question personality calibration with review/correction before saving
+- [x] Persisted user profile context is passed to the brain without raw file contents
+- [x] Separate brain-model and voice-input-model selectors with local settings storage
 
 ### Operations and Documentation
 
 - [x] `npm run build` compiles TypeScript and copies UI assets
-- [x] `npm test` passes all 46 tests
+- [x] `npm test` passes all 50 tests
 - [x] Live browser smoke test passed for app load and reminder creation
 - [x] API health, key detection, status, and WebSocket routes verified
 - [x] Localhost is the safe default bind; LAN binding is opt-in with `SARVIS_BIND=0.0.0.0`
@@ -59,6 +63,6 @@ The former WPF client is retired. The supported desktop client is a lightweight 
 - [ ] Add a native camera/frame pipeline if vision input is required in the browser product
 - [ ] Add a signed installer if SARVIS needs a distributable desktop package
 
-**Project Status**: Web and desktop MVP plus agentic computer-control pass complete and verified
+**Project Status**: Web and desktop MVP plus consentful awareness/profile pass complete and verified
 **Next Milestone**: CI and production hardening
-**Last Verified**: 2026-10-12
+**Last Verified**: 2026-10-13

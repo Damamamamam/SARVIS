@@ -176,6 +176,28 @@ test('accepts more than 9 keys for unlimited custom-key rotation', () => {
   rotator.dispose();
 });
 
+test('routes remote voice audio to the selected transcription model', async () => {
+  const origFetch = globalThis.fetch;
+  let requestedUrl = '';
+  let requestedModel = '';
+  globalThis.fetch = (async (url: any, init: any) => {
+    requestedUrl = String(url);
+    requestedModel = String(await init.body.get('model'));
+    return { status: 200, ok: true, json: async () => ({ text: 'transcribed command' }) } as unknown as Response;
+  }) as any;
+  try {
+    const rotator = new APIRotatorService(mockKeys(1));
+    const result = await rotator.transcribe(new Uint8Array([1, 2, 3]), 'audio/webm', 'whisper-1');
+    assert.equal(result.ok, true);
+    assert.equal(result.text, 'transcribed command');
+    assert.match(requestedUrl, /audio\/transcriptions$/);
+    assert.equal(requestedModel, 'whisper-1');
+    rotator.dispose();
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
 test('timeout failure is treated as failover trigger', async () => {
   const keys = mockKeys(8);
   const origFetch = globalThis.fetch;

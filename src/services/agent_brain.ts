@@ -22,6 +22,11 @@ export interface BrainConfig {
   screenTimeThresholdMs?: number;
   reminderLeadMinutes?: number;
   ownerName?: string;
+  /** Explicitly selected reasoning model; auto leaves failover model choice intact. */
+  brainModel?: string;
+  /** Bounded, user-confirmed context. Never put raw file contents here. */
+  userContext?: string;
+  profile?: Partial<BehaviorProfile>;
 }
 
 export interface AgentEvent {
@@ -102,6 +107,7 @@ export class AgentBrain {
       nudgePrefs: { screenTimeThresholdMs: this.cfg.screenTimeThresholdMs, reminderLeadMinutes: this.cfg.reminderLeadMinutes },
       tone: 'CALM',
       ownerName: config.ownerName,
+      ...config.profile,
     };
   }
 
@@ -171,7 +177,14 @@ export class AgentBrain {
     }
 
     // LLM path
-    const res = await this.rotator.complete({ messages: this.conversation.transcript, maxTokens: 512 });
+    const messages = this.cfg.userContext
+      ? [{ role: 'system', content: this.cfg.userContext, tsMs: 0 }, ...this.conversation.transcript]
+      : this.conversation.transcript;
+    const res = await this.rotator.complete({
+      messages,
+      model: this.cfg.brainModel && this.cfg.brainModel !== 'auto' ? this.cfg.brainModel : undefined,
+      maxTokens: 512,
+    });
     if (!res.ok) {
       const fallback = localFallback(utterance);
       // Surface the real provider error so "rate-limited" is never a mystery.

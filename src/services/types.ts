@@ -67,10 +67,18 @@ export interface ScreenTimeEntry {
 
 export interface BehaviorProfile {
   ownerName?: string;
+  role?: string;
+  traits?: string[];
   wakeWord: string;
   routines: Array<{ timeWindow: string; observedApps: string[]; heardKeywords: string[] }>;
   nudgePrefs: { screenTimeThresholdMs: number; reminderLeadMinutes: number };
   tone: 'CALM' | 'CHEERFUL' | 'FORMAL';
+  setupComplete?: boolean;
+  awareness?: {
+    platform: string;
+    apps?: { installed: string[]; running: string[] };
+    files?: { roots: string[]; folders: number; files: number; extensions: Record<string, number> };
+  };
 }
 
 export type TalkState = 'TALKING_TO_SARVIS' | 'ROOM_CONVERSATION' | 'NO_FACE';

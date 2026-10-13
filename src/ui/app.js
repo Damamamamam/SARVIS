@@ -1,173 +1,78 @@
 /* SARVIS minimal web and desktop client. */
 document.addEventListener('DOMContentLoaded', async () => {
   const $ = (id) => document.getElementById(id);
-  const state = { keys: [], sending: false, voiceOutput: localStorage.getItem('sarvis_voice_output') !== 'off' };
+  const state = { keys: [], setup: null, models: { brain: [], voice: [] }, settings: { brainModel: 'auto', voiceInputModel: 'browser-native' }, sending: false, voiceOutput: localStorage.getItem('sarvis_voice_output') !== 'off', quizAnswers: {} };
+  const quiz = [
+    { id: 'workStyle', question: 'When a task is messy, what helps most?', options: [['structured', 'A clear plan and ordered steps'], ['creative', 'Room to explore and find a better way'], ['fast', 'A quick first move and momentum']] },
+    { id: 'communication', question: 'How should SARVIS talk to you?', options: [['direct', 'Short, direct, and practical'], ['warm', 'Encouraging with a little context'], ['detailed', 'Thorough explanations and trade-offs']] },
+    { id: 'planning', question: 'How do you like to organize your day?', options: [['planned', 'I like a schedule and reminders'], ['flexible', 'I adapt as things change'], ['focused', 'I work in focused bursts on priorities']] },
+    { id: 'energy', question: 'What kind of push is useful when you are stuck?', options: [['gentle', 'A calm nudge and one next step'], ['challenging', 'A firm challenge to get moving'], ['quiet', 'Minimal interruption unless I ask']] },
+    { id: 'support', question: 'What should SARVIS optimize for?', options: [['speed', 'Get the job done quickly'], ['learning', 'Help me understand while doing it'], ['quality', 'Slow down when quality or safety matters']] },
+  ];
 
-  function escapeHtml(value) {
-    return String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char]));
-  }
-
-  function formatText(value) {
-    return escapeHtml(value).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
-  }
-
+  function escapeHtml(value) { return String(value ?? '').replace(/[&<>'"]/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[char])); }
+  function formatText(value) { return escapeHtml(value).replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>'); }
   function appendMessage(role, content) {
-    const row = document.createElement('article');
-    row.className = `message ${role}`;
+    const row = document.createElement('article'); row.className = `message ${role}`;
     row.innerHTML = `<div class="avatar">${role === 'user' ? 'U' : role === 'system' ? '!' : 'S'}</div><div><p class="message-label">${role === 'user' ? 'YOU' : role === 'system' ? 'SYSTEM' : 'SARVIS'}</p><p>${formatText(content)}</p></div>`;
-    $('chatMessages').appendChild(row);
-    $('chatMessages').scrollTop = $('chatMessages').scrollHeight;
-    if (role === 'assistant' && state.voiceOutput && 'speechSynthesis' in window) {
-      try { window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(String(content).slice(0, 600))); } catch { /* optional */ }
-    }
+    $('chatMessages').appendChild(row); $('chatMessages').scrollTop = $('chatMessages').scrollHeight;
+    if (role === 'assistant' && state.voiceOutput && 'speechSynthesis' in window) { try { window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(String(content).slice(0, 600))); } catch { /* optional */ } }
   }
-
-  async function apiJson(url, options) {
-    const response = await fetch(url, options);
-    const body = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`);
-    return body;
-  }
-
-  const apiKeys = () => apiJson('/api/keys');
-  const apiStatus = () => apiJson('/api/status');
+  async function apiJson(url, options) { const response = await fetch(url, options); const body = await response.json().catch(() => ({})); if (!response.ok) throw new Error(body.error || `HTTP ${response.status}`); return body; }
+  const apiKeys = () => apiJson('/api/keys'); const apiStatus = () => apiJson('/api/status'); const apiSetup = () => apiJson('/api/setup');
   const apiSaveCustomKeys = (keys) => apiJson('/api/keys', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ keys }) });
-
-  function customPayload() {
-    return state.keys.filter((key) => key.source === 'custom').map((key) => ({
-      id: key.id, label: key.label, provider: key.provider, endpoint: key.endpoint, model: key.model,
-      // The server preserves the existing secret when apiKey is omitted.
-    }));
-  }
-
-  async function refreshKeys() {
-    const data = await apiKeys();
-    state.keys = data.keys || [];
-    renderKeys();
-    return data;
-  }
-
+  function customPayload() { return state.keys.filter((key) => key.source === 'custom').map((key) => ({ id: key.id, label: key.label, provider: key.provider, endpoint: key.endpoint, model: key.model })); }
+  async function refreshKeys() { const data = await apiKeys(); state.keys = data.keys || []; renderKeys(); return data; }
   function renderKeys() {
-    const list = $('keysList');
-    if (!list) return;
-    const count = state.keys.length;
-    $('keySummary').textContent = `${count} connection${count === 1 ? '' : 's'} configured. Add as many as you need.`;
-    list.innerHTML = count ? state.keys.map((key) => `
-      <article class="key-card">
-        <div><h3>${escapeHtml(key.label || key.provider)}</h3><p class="key-meta">${escapeHtml(key.provider)} · ${escapeHtml(key.model || 'default')} · ${escapeHtml(key.endpoint)}</p></div>
-        <div class="key-card-actions"><span class="key-badge">${key.source === 'custom' ? 'LOCAL' : 'ENV'}</span>${key.source === 'custom' ? `<button class="delete-key" data-key-id="${escapeHtml(key.id)}">Remove</button>` : ''}</div>
-      </article>`).join('') : '<div class="key-card"><div><h3>No keys yet</h3><p class="key-meta">Local mode is available. Add one connection to enable full intelligence.</p></div></div>';
+    const list = $('keysList'); if (!list) return; $('keySummary').textContent = `${state.keys.length} connection${state.keys.length === 1 ? '' : 's'} configured. Add as many as you need.`;
+    list.innerHTML = state.keys.length ? state.keys.map((key) => `<article class="key-card"><div><h3>${escapeHtml(key.label || key.provider)}</h3><p class="key-meta">${escapeHtml(key.provider)} · ${escapeHtml(key.model || 'default')} · ${escapeHtml(key.endpoint)}</p></div><div class="key-card-actions"><span class="key-badge">${key.source === 'custom' ? 'LOCAL' : 'ENV'}</span>${key.source === 'custom' ? `<button class="delete-key" data-key-id="${escapeHtml(key.id)}">Remove</button>` : ''}</div></article>`).join('') : '<div class="key-card"><div><h3>No keys yet</h3><p class="key-meta">Local mode is available. Add one connection to enable full intelligence.</p></div></div>';
   }
-
   function showKeyForm(show = true) { $('keyForm').classList.toggle('hidden', !show); if (show) $('keyProvider').focus(); }
-
-  async function saveNewKey(prefix = 'key') {
-    const get = (name) => $(`${prefix}${name}`).value.trim();
-    const entry = { id: `custom-${Date.now().toString(36)}`, label: get('Label') || get('Provider'), provider: get('Provider'), endpoint: get('Endpoint'), model: get('Model'), apiKey: get('Secret') };
-    if (!entry.provider || !entry.endpoint || !entry.model || !entry.apiKey) throw new Error('Provider, endpoint, model, and API key are required.');
-    await apiSaveCustomKeys([...customPayload(), entry]);
-    await refreshKeys();
+  async function saveNewKey() {
+    const get = (id) => $(id).value.trim(); const entry = { id: `custom-${Date.now().toString(36)}`, label: get('keyLabel') || get('keyProvider'), provider: get('keyProvider'), endpoint: get('keyEndpoint'), model: get('keyModel'), apiKey: get('keySecret') };
+    if (!entry.provider || !entry.endpoint || !entry.model || !entry.apiKey) throw new Error('Provider, endpoint, model, and API key are required.'); await apiSaveCustomKeys([...customPayload(), entry]); await refreshKeys();
   }
+  function fillSelect(select, options, selected) { $(select).innerHTML = options.map((option) => `<option value="${escapeHtml(option.id)}">${escapeHtml(option.label)}</option>`).join(''); if (options.some((option) => option.id === selected)) $(select).value = selected; }
+  function renderModels() { fillSelect('brainModel', state.models.brain, state.settings.brainModel); fillSelect('voiceInputModel', state.models.voice, state.settings.voiceInputModel); fillSelect('setupBrainModel', state.models.brain, state.settings.brainModel); fillSelect('setupVoiceModel', state.models.voice, state.settings.voiceInputModel); }
+  function renderProfile() {
+    const profile = state.setup?.profile;
+    if (!profile?.setupComplete) { $('profileName').textContent = 'Not set up'; $('profileSummary').textContent = 'Run the setup conversation to build a user profile.'; }
+    else { $('profileName').textContent = profile.displayName || 'Your SARVIS profile'; const appCount = profile.awareness?.apps?.installed?.length ?? 0; const fileInfo = profile.awareness?.files ? `${profile.awareness.files.files} files across ${profile.awareness.files.folders} folders` : 'file metadata not granted'; $('profileSummary').textContent = `${profile.role || 'Personal workspace'} · ${profile.traits?.join(', ') || 'No traits saved'} · ${appCount} app shortcuts · ${fileInfo}.`; }
+    const awareness = profile?.awareness; $('awarenessSummary').textContent = !awareness ? 'No awareness snapshot yet.' : `${awareness.apps ? `${awareness.apps.installed.length} installed app shortcuts and ${awareness.apps.running.length} running apps` : 'App awareness skipped'}; ${awareness.files ? `${awareness.files.files} files and ${awareness.files.folders} folders across selected roots` : 'file awareness skipped'}. Metadata only.`;
+  }
+  function renderQuiz() { $('quizQuestions').innerHTML = quiz.map((item) => `<div class="quiz-question"><p>${item.question}</p><div class="quiz-options">${item.options.map(([value, label]) => `<label class="quiz-option"><input type="radio" name="${item.id}" value="${value}"><span>${label}</span></label>`).join('')}</div></div>`).join(''); for (const [id, value] of Object.entries(state.quizAnswers)) { const input = document.querySelector(`input[name="${id}"][value="${value}"]`); if (input) input.checked = true; } }
+  function inferTraits() { const labels = { structured: 'structured', creative: 'creative', fast: 'action-oriented', direct: 'direct', warm: 'warm', detailed: 'thorough', planned: 'organized', flexible: 'adaptable', focused: 'focused', gentle: 'calm', challenging: 'ambitious', quiet: 'independent', speed: 'efficient', learning: 'curious', quality: 'quality-minded' }; return [...new Set(Object.values(state.quizAnswers).map((value) => labels[value]).filter(Boolean))].slice(0, 6); }
+  function showSetupStep(step) { document.querySelectorAll('[data-setup-step]').forEach((node) => node.classList.toggle('hidden', node.dataset.setupStep !== step)); }
+  function openSetupWizard() { renderQuiz(); renderModels(); $('setupWizard').classList.remove('hidden'); showSetupStep('consent'); }
+  async function scanContext() { $('scanStatus').textContent = 'Scanning metadata...'; $('btnScanContext').disabled = true; try { const data = await apiJson('/api/setup/scan', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ consent: { apps: $('consentApps').checked, files: $('consentFiles').checked } }) }); state.setup = state.setup || {}; state.setup.profile = state.setup.profile || {}; state.setup.profile.awareness = data.awareness; showSetupStep('quiz'); } catch (error) { $('scanStatus').textContent = error.message; } finally { $('btnScanContext').disabled = false; } }
+  async function completeProfile() { const payload = { displayName: $('setupName').value.trim(), role: $('setupRole').value.trim(), traits: inferTraits(), answers: state.quizAnswers, tone: state.quizAnswers.communication === 'warm' ? 'CHEERFUL' : state.quizAnswers.communication === 'detailed' ? 'FORMAL' : 'CALM', brainModel: $('setupBrainModel').value, voiceInputModel: $('setupVoiceModel').value }; const data = await apiJson('/api/setup/profile', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) }); state.setup = data; state.settings = data.settings; state.models = (await apiSetup()).models; renderModels(); renderProfile(); $('setupWizard').classList.add('hidden'); }
+  async function send(text) { if (!text || state.sending) return; state.sending = true; $('btnSend').disabled = true; $('txtInput').value = ''; appendMessage('user', text); $('voiceStatus').textContent = 'Thinking...'; try { const result = await apiJson('/api/hear', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text }) }); appendMessage('assistant', result.reply || 'No response returned.'); if (result.agentSteps?.length) appendMessage('system', result.agentSteps.map((step) => `${step.ok ? 'OK' : 'STOP'} ${step.tool}: ${step.detail}`).join('\n')); if (result.degraded) appendMessage('system', 'Running in local/degraded mode.'); } catch (error) { appendMessage('system', `SARVIS could not complete that request: ${error.message}`); } finally { state.sending = false; $('btnSend').disabled = false; $('voiceStatus').textContent = ''; $('txtInput').focus(); } }
+  async function refreshStatus() { try { const status = await apiStatus(); const active = status.rotator?.keys?.find((key) => key.state === 'ACTIVE'); $('activeProviderName').textContent = active ? `Active: ${active.label || active.provider}` : 'Local mode'; $('healthText').textContent = `${status.rotator?.keys?.length || 0} connections`; $('healthPulse').classList.add('live'); } catch { $('healthText').textContent = 'Offline'; $('healthPulse').classList.remove('live'); } try { const activeWindow = await apiJson('/api/active-window'); if (activeWindow?.name) $('voiceStatus').textContent = `Active window: ${activeWindow.name}`; } catch { /* optional */ } }
+  async function refreshSetup() { state.setup = await apiSetup(); state.settings = state.setup.settings || state.settings; state.models = state.setup.models || state.models; renderModels(); renderProfile(); return state.setup; }
 
-  async function send(text) {
-    if (!text || state.sending) return;
-    state.sending = true;
-    $('btnSend').disabled = true;
-    $('txtInput').value = '';
-    appendMessage('user', text);
-    $('voiceStatus').textContent = 'Thinking...';
-    try {
-      const result = await apiJson('/api/hear', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text }) });
-      appendMessage('assistant', result.reply || 'No response returned.');
-      if (result.agentSteps?.length) appendMessage('system', result.agentSteps.map((step) => `${step.ok ? 'OK' : 'STOP'} ${step.tool}: ${step.detail}`).join('\n'));
-      if (result.degraded) appendMessage('system', 'Running in local/degraded mode.');
-    } catch (error) {
-      appendMessage('system', `SARVIS could not complete that request: ${error.message}`);
-    } finally {
-      state.sending = false;
-      $('btnSend').disabled = false;
-      $('voiceStatus').textContent = '';
-      $('txtInput').focus();
+  document.querySelectorAll('.nav-item').forEach((item) => item.addEventListener('click', () => { document.querySelectorAll('.nav-item').forEach((button) => button.classList.remove('active')); document.querySelectorAll('.view').forEach((view) => view.classList.remove('active')); item.classList.add('active'); $(item.dataset.tab).classList.add('active'); $('pageTitle').textContent = item.textContent; if (item.dataset.tab === 'keysView') refreshKeys().catch((error) => { $('keySummary').textContent = error.message; }); if (item.dataset.tab === 'profileView') refreshSetup().catch(() => {}); }));
+  $('btnSend').addEventListener('click', () => send($('txtInput').value.trim())); $('txtInput').addEventListener('keydown', (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); send($('txtInput').value.trim()); } }); document.querySelectorAll('.quick').forEach((button) => button.addEventListener('click', () => send(button.dataset.query)));
+  document.querySelectorAll('.control-card').forEach((button) => button.addEventListener('click', async () => { try { const result = await apiJson('/api/command', { method: 'POST', headers: { 'content-type': 'application/json' }, body: button.dataset.command }); appendMessage('system', result.success ? 'Command completed.' : `Command failed: ${result.error || 'unknown error'}`); } catch (error) { appendMessage('system', `Control failed: ${error.message}`); } }));
+  $('btnAddKey').addEventListener('click', () => showKeyForm(true)); $('btnCancelKey').addEventListener('click', () => showKeyForm(false)); $('keyForm').addEventListener('submit', async (event) => { event.preventDefault(); $('keyFormStatus').textContent = 'Saving...'; try { await saveNewKey(); $('keyForm').reset(); showKeyForm(false); $('keyFormStatus').textContent = ''; } catch (error) { $('keyFormStatus').textContent = error.message; } }); $('keysList').addEventListener('click', async (event) => { const button = event.target.closest('.delete-key'); if (!button) return; await apiSaveCustomKeys(customPayload().filter((key) => key.id !== button.dataset.keyId)); await refreshKeys(); });
+  const recognitionType = window.SpeechRecognition || window.webkitSpeechRecognition; let recognition = null; let recorder = null; let recorderStream = null; let audioChunks = [];
+  $('btnVoice').addEventListener('click', async () => {
+    if (state.settings.voiceInputModel !== 'browser-native' && navigator.mediaDevices?.getUserMedia && window.MediaRecorder) {
+      if (recorder) { recorder.stop(); $('voiceStatus').textContent = 'Transcribing...'; return; }
+      try {
+        recorderStream = await navigator.mediaDevices.getUserMedia({ audio: true }); audioChunks = []; recorder = new MediaRecorder(recorderStream);
+        recorder.ondataavailable = (event) => { if (event.data.size) audioChunks.push(event.data); };
+        recorder.onstop = async () => { const blob = new Blob(audioChunks, { type: recorder?.mimeType || 'audio/webm' }); recorderStream?.getTracks().forEach((track) => track.stop()); recorder = null; recorderStream = null; try { const response = await fetch('/api/voice/transcribe', { method: 'POST', headers: { 'content-type': blob.type || 'audio/webm' }, body: blob }); const result = await response.json(); if (!response.ok) throw new Error(result.error || `HTTP ${response.status}`); await send(result.text); } catch (error) { $('voiceStatus').textContent = `Voice transcription failed: ${error.message}`; } };
+        recorder.start(); $('voiceStatus').textContent = `Recording with ${state.settings.voiceInputModel}... click Mic again to send`;
+      } catch (error) { $('voiceStatus').textContent = `Microphone unavailable: ${error.message}`; }
+      return;
     }
-  }
-
-  async function refreshStatus() {
-    try {
-      const status = await apiStatus();
-      const active = status.rotator?.keys?.find((key) => key.state === 'ACTIVE');
-      $('activeProviderName').textContent = active ? `Active: ${active.label || active.provider}` : 'Local mode';
-      $('healthText').textContent = `${status.rotator?.keys?.length || 0} connections`;
-      $('healthPulse').classList.add('live');
-    } catch {
-      $('healthText').textContent = 'Offline';
-      $('healthPulse').classList.remove('live');
-    }
-    try {
-      const activeWindow = await apiJson('/api/active-window');
-      if (activeWindow?.name) $('voiceStatus').textContent = `Active window: ${activeWindow.name}`;
-    } catch { /* optional */ }
-  }
-
-  document.querySelectorAll('.nav-item').forEach((item) => item.addEventListener('click', () => {
-    document.querySelectorAll('.nav-item').forEach((button) => button.classList.remove('active'));
-    document.querySelectorAll('.view').forEach((view) => view.classList.remove('active'));
-    item.classList.add('active');
-    $(item.dataset.tab).classList.add('active');
-    $('pageTitle').textContent = item.textContent;
-    if (item.dataset.tab === 'keysView') refreshKeys().catch((error) => { $('keySummary').textContent = error.message; });
-  }));
-
-  $('btnSend').addEventListener('click', () => send($('txtInput').value.trim()));
-  $('txtInput').addEventListener('keydown', (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); send($('txtInput').value.trim()); } });
-  document.querySelectorAll('.quick').forEach((button) => button.addEventListener('click', () => send(button.dataset.query)));
-
-  document.querySelectorAll('.control-card').forEach((button) => button.addEventListener('click', async () => {
-    try { const result = await apiJson('/api/command', { method: 'POST', headers: { 'content-type': 'application/json' }, body: button.dataset.command }); appendMessage('system', result.success ? 'Command completed.' : `Command failed: ${result.error || 'unknown error'}`); }
-    catch (error) { appendMessage('system', `Control failed: ${error.message}`); }
-  }));
-
-  $('btnAddKey').addEventListener('click', () => showKeyForm(true));
-  $('btnCancelKey').addEventListener('click', () => showKeyForm(false));
-  $('keyForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    $('keyFormStatus').textContent = 'Saving...';
-    try { await saveNewKey(); $('keyForm').reset(); showKeyForm(false); $('keyFormStatus').textContent = ''; }
-    catch (error) { $('keyFormStatus').textContent = error.message; }
-  });
-  $('keysList').addEventListener('click', async (event) => {
-    const button = event.target.closest('.delete-key');
-    if (!button) return;
-    const next = customPayload().filter((key) => key.id !== button.dataset.keyId);
-    await apiSaveCustomKeys(next);
-    await refreshKeys();
-  });
-
-  const recognitionType = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let recognition = null;
-  $('btnVoice').addEventListener('click', () => {
     if (!recognitionType) { $('voiceStatus').textContent = 'Speech recognition is not available in this browser.'; return; }
     if (recognition) { recognition.stop(); recognition = null; $('voiceStatus').textContent = ''; return; }
-    recognition = new recognitionType();
-    recognition.lang = 'en-US';
-    recognition.onstart = () => { $('voiceStatus').textContent = 'Listening...'; };
-    recognition.onerror = () => { $('voiceStatus').textContent = 'Voice input failed.'; recognition = null; };
-    recognition.onend = () => { recognition = null; };
-    recognition.onresult = (event) => send(event.results[0][0].transcript);
-    recognition.start();
+    recognition = new recognitionType(); recognition.lang = 'en-US'; recognition.onstart = () => { $('voiceStatus').textContent = `Listening with ${state.settings.voiceInputModel}...`; }; recognition.onerror = () => { $('voiceStatus').textContent = 'Voice input failed.'; recognition = null; }; recognition.onend = () => { recognition = null; }; recognition.onresult = (event) => send(event.results[0][0].transcript); recognition.start();
   });
-
-  $('setupForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    try { await saveNewKey('setup'); localStorage.setItem('sarvis_setup_complete', 'true'); $('setupWizard').classList.add('hidden'); await refreshStatus(); }
-    catch (error) { $('setupSecret').setCustomValidity(error.message); $('setupSecret').reportValidity(); }
-  });
-  $('skipSetup').addEventListener('click', () => { localStorage.setItem('sarvis_setup_complete', 'true'); $('setupWizard').classList.add('hidden'); });
-
-  try {
-    const data = await refreshKeys();
-    if (!data.keys?.length && localStorage.getItem('sarvis_setup_complete') !== 'true') $('setupWizard').classList.remove('hidden');
-  } catch { /* the setup screen remains usable */ }
-  await refreshStatus();
-  setInterval(refreshStatus, 6000);
-  $('txtInput').focus();
+  $('btnScanContext').addEventListener('click', scanContext); $('skipScan').addEventListener('click', () => showSetupStep('quiz')); $('backToConsent').addEventListener('click', () => showSetupStep('consent')); $('backToQuiz').addEventListener('click', () => showSetupStep('quiz'));
+  $('btnReviewProfile').addEventListener('click', () => { for (const item of quiz) { const selected = document.querySelector(`input[name="${item.id}"]:checked`); if (selected) state.quizAnswers[item.id] = selected.value; } if (Object.keys(state.quizAnswers).length < quiz.length) { $('profilePreview').textContent = 'Choose one answer in each question so SARVIS can make a useful first guess.'; return; } $('profilePreview').textContent = `I think you are ${inferTraits().join(', ')}. You can edit your name and role below, or go back and change any answer.`; showSetupStep('review'); });
+  $('setupForm').addEventListener('submit', async (event) => { event.preventDefault(); try { await completeProfile(); } catch (error) { $('profilePreview').textContent = error.message; } }); $('skipProfile').addEventListener('click', async () => { try { const data = await apiJson('/api/setup/profile', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ traits: [], tone: 'CALM', brainModel: $('setupBrainModel').value, voiceInputModel: $('setupVoiceModel').value }) }); state.setup = data; state.settings = data.settings; $('setupWizard').classList.add('hidden'); renderProfile(); } catch (error) { $('profilePreview').textContent = error.message; } });
+  $('btnRerunSetup').addEventListener('click', openSetupWizard); $('btnRefreshAwareness').addEventListener('click', async () => { const consent = state.setup?.profile?.awareness?.consent || { apps: true, files: true }; try { const data = await apiJson('/api/setup/scan', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ consent }) }); state.setup.profile.awareness = data.awareness; renderProfile(); } catch (error) { $('awarenessSummary').textContent = error.message; } }); $('btnSaveSettings').addEventListener('click', async () => { $('settingsStatus').textContent = 'Saving...'; try { const data = await apiJson('/api/settings', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ brainModel: $('brainModel').value, voiceInputModel: $('voiceInputModel').value }) }); state.settings = data.settings; $('settingsStatus').textContent = 'Saved.'; } catch (error) { $('settingsStatus').textContent = error.message; } });
+  try { await refreshKeys(); const setup = await refreshSetup(); if (setup.setupRequired) openSetupWizard(); } catch { /* server may still be starting */ } await refreshStatus(); setInterval(refreshStatus, 6000); $('txtInput').focus();
 });

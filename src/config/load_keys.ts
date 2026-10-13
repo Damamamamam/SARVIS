@@ -15,6 +15,12 @@ export interface ProviderDefinition {
   models: string[];
 }
 
+export interface ModelOption {
+  id: string;
+  label: string;
+  provider: string;
+}
+
 export interface StoredKeyInput {
   id?: string;
   label?: string;
@@ -41,6 +47,26 @@ export const PROVIDERS: ProviderDefinition[] = [
   { env: 'SARVIS_DEEPSEEK_API_KEY', id: 'deepseek-1', provider: 'deepseek', endpoint: 'https://api.deepseek.com/chat/completions', models: ['deepseek-chat'] },
   { env: 'SARVIS_OPENCODE_ZEN_API_KEY', id: 'opencode-zen-1', provider: 'opencode-zen', endpoint: 'https://opencode.ai/zen/v1/chat/completions', models: ['nemotron-3-ultra-free'] },
 ];
+
+export const VOICE_MODEL_OPTIONS: ModelOption[] = [
+  { id: 'browser-native', label: 'Browser native (local)', provider: 'local' },
+  { id: 'whisper-1', label: 'Whisper-compatible audio', provider: 'openai-compatible' },
+  { id: 'gemini-2.5-flash', label: 'Gemini audio', provider: 'gemini' },
+];
+
+export function getAvailableModels(keys: KeyConfig[] = loadKeysFromEnv()): { brain: ModelOption[]; voice: ModelOption[] } {
+  const brain: ModelOption[] = [{ id: 'auto', label: 'Auto / failover', provider: 'SARVIS' }];
+  const seen = new Set(brain.map((model) => model.id));
+  for (const key of keys) {
+    for (const model of key.models) {
+      if (!seen.has(model)) {
+        seen.add(model);
+        brain.push({ id: model, label: `${model} (${key.provider})`, provider: key.provider });
+      }
+    }
+  }
+  return { brain, voice: VOICE_MODEL_OPTIONS };
+}
 
 export function getKeyStorePath(dir: string = process.cwd()): string {
   return path.join(dir, '.sarvis-keys.json');
