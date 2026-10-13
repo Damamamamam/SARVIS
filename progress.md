@@ -91,3 +91,11 @@
 - Passed the browser UI flow for scan, quiz, profile confirmation, and model saving.
 - Added remote voice transcription routing for selected compatible models, with browser-native local voice as the default and fallback.
 - Verification: 50/50 tests passed, build passed, live setup/settings API smoke passed, browser UI smoke passed.
+
+## 2026-10-13 (optional Google personalization pass)
+- Added Google OpenID Connect sign-in with CSRF state validation and memory-only access/refresh tokens.
+- Added incremental YouTube read-only authorization, sanitized activity/subscription preview, and preview-before-save confirmation.
+- Added explicit Google Takeout/My Activity JSON search-topic import; the browser parses the user-selected file locally before approval.
+- Added separate delete controls for YouTube signals and imported search topics, plus full Google disconnect.
+- Documented that Google's private personalized home feed and direct My Activity history API are not available for silent third-party collection.
+- Verification: 52/52 tests passed, build passed, live health/setup/Google-status smoke passed, and the Profile & models UI rendered the consent controls.

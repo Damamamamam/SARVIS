@@ -39,7 +39,7 @@ SARVIS is a personal computer agent framework with a minimalist browser client a
 - **Persistence**: `.sarvis-profile.json` and `.sarvis-settings.json`, both ignored by Git
 
 ### 4. Communication Protocol
-- **Web UI**: HTTP JSON API (`/api/hear`, `/api/status`, `/api/keys`, `/api/command`) + WebSocket (`/ws`) on port 9742
+- **Web UI**: HTTP JSON API (`/api/hear`, `/api/status`, `/api/keys`, `/api/command`, `/api/setup`, `/api/auth/google/*`, `/api/integrations/*`) + WebSocket (`/ws`) on port 9742
 - **Headless bridge**: WebSocket (`ws://localhost:9741`) with JSON envelopes and module-based routing
 - **Modules**: `audio`, `vision`, `screen`, `device`, `voice`
 
@@ -141,6 +141,8 @@ npm run start:server
 ## Security Features
 
 - **API Key Management**: Environment-based, never hardcoded; web settings never leak secrets back to the browser
+- **Google Personalization**: Optional incremental OpenID sign-in and YouTube read-only consent; tokens are memory-only and user-approved signals are stored locally
+- **Search History Boundary**: No silent direct My Activity access; only user-selected JSON export topics can be imported after review
 - **Localhost Binding**: WebSocket/HTTP bind locally by default
 - **Kill Switch**: Immediate audio capture termination
 - **Degraded Mode**: Functions without API keys (reminders, time/date work offline)

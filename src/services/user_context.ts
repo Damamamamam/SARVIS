@@ -57,6 +57,15 @@ export interface UserProfile {
   traits: string[];
   answers?: PersonalityAnswers;
   awareness?: LocalAwareness;
+  google?: {
+    email?: string;
+    name?: string;
+    youtubeChannels?: string[];
+    youtubeTopics?: string[];
+    searchTopics?: string[];
+    youtubeConfirmedAt?: string;
+    searchHistoryConfirmedAt?: string;
+  };
   confirmedAt?: string;
 }
 
@@ -90,6 +99,7 @@ export function loadUserProfile(filePath: string = getProfilePath()): UserProfil
       traits: Array.isArray(parsed.traits) ? parsed.traits.map((v) => cleanText(v, 50)).filter(Boolean).slice(0, 8) : [],
       answers: parsed.answers,
       awareness: parsed.awareness,
+      google: parsed.google,
       confirmedAt: parsed.confirmedAt,
     };
   } catch {
@@ -103,6 +113,15 @@ export function saveUserProfile(profile: UserProfile, filePath: string = getProf
     displayName: cleanText(profile.displayName, 80) || undefined,
     role: cleanText(profile.role, 120) || undefined,
     traits: profile.traits.map((v) => cleanText(v, 50)).filter(Boolean).slice(0, 8),
+    google: profile.google ? {
+      email: cleanText(profile.google.email, 160) || undefined,
+      name: cleanText(profile.google.name, 120) || undefined,
+      youtubeChannels: profile.google.youtubeChannels?.map((v) => cleanText(v, 120)).filter(Boolean).slice(0, 50),
+      youtubeTopics: profile.google.youtubeTopics?.map((v) => cleanText(v, 80)).filter(Boolean).slice(0, 40),
+      searchTopics: profile.google.searchTopics?.map((v) => cleanText(v, 120)).filter(Boolean).slice(0, 100),
+      youtubeConfirmedAt: profile.google.youtubeConfirmedAt,
+      searchHistoryConfirmedAt: profile.google.searchHistoryConfirmedAt,
+    } : undefined,
   };
   fs.writeFileSync(filePath, JSON.stringify(safe, null, 2), 'utf8');
   return safe;

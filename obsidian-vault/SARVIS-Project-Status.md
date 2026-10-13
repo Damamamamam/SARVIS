@@ -40,6 +40,10 @@ The former WPF client is retired. The supported desktop client is a lightweight 
 - [x] Five-question personality calibration with review/correction before saving
 - [x] Persisted user profile context is passed to the brain without raw file contents
 - [x] Separate brain-model and voice-input-model selectors with local settings storage
+- [x] Optional Google OpenID Connect sign-in with CSRF state protection and memory-only tokens
+- [x] Incremental YouTube read-only authorization with preview-before-save activity/subscription signals
+- [x] Explicit Google Takeout/My Activity JSON search-topic import with local browser parsing and delete controls
+- [x] Independent Google disconnect, YouTube-signal delete, and search-topic delete controls
 
 ### Operations and Documentation
 
@@ -63,6 +67,6 @@ The former WPF client is retired. The supported desktop client is a lightweight 
 - [ ] Add a native camera/frame pipeline if vision input is required in the browser product
 - [ ] Add a signed installer if SARVIS needs a distributable desktop package
 
-**Project Status**: Web and desktop MVP plus consentful awareness/profile pass complete and verified
+**Project Status**: Web and desktop MVP plus consentful awareness/profile and optional Google personalization pass complete and verified
 **Next Milestone**: CI and production hardening
 **Last Verified**: 2026-10-13

@@ -23,6 +23,7 @@ import { WebSocketServer, type WebSocket } from 'ws';
 import { JarvisBrain } from '../agent/brain.js';
 import { getAvailableModels, isUsableApiKey, loadCustomKeys, loadDotEnvFile, loadKeysFromEnv, PROVIDERS, saveCustomKeys, validateKeyFormats, type StoredKeyInput } from '../config/load_keys.js';
 import { loadSettings, loadUserProfile, saveSettings, saveUserProfile, scanLocalAwareness, type SarvisSettings, type UserProfile } from '../services/user_context.js';
+import { GoogleIntegration } from '../services/google_integration.js';
 import { WinControlService } from '../services/win_control.js';
 import { WinScreenGuard } from '../services/win_screen_guard.js';
 
@@ -94,14 +95,42 @@ function buildUserContext(profile: UserProfile): string | undefined {
   const fileSummary = awareness?.files
     ? `File metadata summary: ${awareness.files.files} files across ${awareness.files.folders} folders; roots ${awareness.files.roots.map((root) => path.basename(root)).join(', ') || 'none'}; common extensions ${Object.entries(awareness.files.extensions).sort((a, b) => b[1] - a[1]).slice(0, 12).map(([ext, count]) => `${ext} (${count})`).join(', ') || 'none'}.`
     : 'File metadata inventory was not granted.';
+  const googleSummary = profile.google
+    ? `User-approved Google signals: YouTube channels ${profile.google.youtubeChannels?.join(', ') || 'none'}, YouTube topics ${profile.google.youtubeTopics?.join(', ') || 'none'}, imported search topics ${profile.google.searchTopics?.join(', ') || 'none'}.`
+    : 'No Google signals have been connected.';
   return [
     'You are SARVIS, a local computer assistant. This is user-confirmed context, not a license to guess or claim access to private content.',
     `The user${profile.displayName ? ` is ${profile.displayName}` : ''}${profile.role ? ` and describes their role as ${profile.role}` : ''}.`,
     `Their preferred traits are ${profile.traits.join(', ') || 'not specified'} and their preferred tone is ${profile.tone}.`,
     appSummary,
     fileSummary,
+    googleSummary,
     'Use this context to tailor suggestions, but ask before taking consequential actions and never infer sensitive traits from app names or file types.',
   ].join(' ');
+}
+
+function cookieValue(req: IncomingMessage, name: string): string | undefined {
+  const header = req.headers.cookie ?? '';
+  for (const part of header.split(';')) {
+    const [key, ...value] = part.trim().split('=');
+    if (key === name) return decodeURIComponent(value.join('='));
+  }
+  return undefined;
+}
+
+function setGoogleCookie(res: ServerResponse, sessionId: string): void {
+  res.setHeader('Set-Cookie', `sarvis_google_session=${encodeURIComponent(sessionId)}; HttpOnly; SameSite=Lax; Path=/; Max-Age=86400`);
+}
+
+function deriveTopics(titles: string[]): string[] {
+  const stop = new Set(['the', 'and', 'for', 'with', 'from', 'this', 'that', 'your', 'you', 'are', 'how', 'what', 'why', 'official', 'video']);
+  const counts = new Map<string, number>();
+  for (const title of titles) {
+    for (const word of title.toLowerCase().match(/[a-z][a-z0-9-]{3,}/g) ?? []) {
+      if (!stop.has(word)) counts.set(word, (counts.get(word) ?? 0) + 1);
+    }
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20).map(([word]) => word);
 }
 
 async function readBody(req: IncomingMessage): Promise<string> {
@@ -146,6 +175,7 @@ async function main(): Promise<void> {
   let jarvis = createBrain();
   const winControl = new WinControlService();
   const winGuard = new WinScreenGuard();
+  const google = new GoogleIntegration(PORT);
   const startedAt = Date.now();
   const peers = new Set<WebSocket>();
 
@@ -175,7 +205,84 @@ async function main(): Promise<void> {
           uptimeSec: Math.round((Date.now() - startedAt) / 1000),
           providers: jarvis.rotator.keyCount,
           transport: 'web',
+          googleConfigured: google.configured,
         });
+      }
+      if (p === '/api/auth/google/start' || p === '/api/auth/google/youtube/start') {
+        const sessionId = cookieValue(req, 'sarvis_google_session') ?? google.createSessionId();
+        setGoogleCookie(res, sessionId);
+        const youtube = p.endsWith('/youtube/start');
+        res.writeHead(302, { Location: google.createAuthorizationUrl(sessionId, youtube) });
+        res.end();
+        return;
+      }
+      if (p === '/api/auth/google/callback') {
+        const sessionId = cookieValue(req, 'sarvis_google_session');
+        const error = url.searchParams.get('error');
+        if (error) {
+          res.writeHead(302, { Location: `/?google=denied&reason=${encodeURIComponent(error)}` });
+          res.end();
+          return;
+        }
+        if (!sessionId || !url.searchParams.get('state') || !url.searchParams.get('code')) throw new Error('Google callback is missing its session, state, or code.');
+        await google.completeAuthorization(sessionId, url.searchParams.get('state')!, url.searchParams.get('code')!);
+        res.writeHead(302, { Location: '/?google=connected' });
+        res.end();
+        return;
+      }
+      if (p === '/api/auth/google/status' && req.method === 'GET') {
+        const sessionId = cookieValue(req, 'sarvis_google_session');
+        return sendJson(res, 200, { ...google.status(sessionId), profile: userProfile.google ?? null });
+      }
+      if (p === '/api/auth/google/logout' && (req.method === 'POST' || req.method === 'GET')) {
+        google.disconnect(cookieValue(req, 'sarvis_google_session'));
+        userProfile = saveUserProfile({ ...userProfile, google: undefined });
+        const old = jarvis;
+        jarvis = createBrain();
+        old.dispose();
+        res.setHeader('Set-Cookie', 'sarvis_google_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');
+        return sendJson(res, 200, { success: true });
+      }
+      if (p === '/api/integrations/youtube/feed' && req.method === 'GET') {
+        const sessionId = cookieValue(req, 'sarvis_google_session');
+        if (!sessionId) return sendJson(res, 401, { error: 'Sign in with Google first.' });
+        try { return sendJson(res, 200, await google.youtubeSignals(sessionId)); }
+        catch (err) { return sendJson(res, 502, { error: (err as Error).message }); }
+      }
+      if (p === '/api/integrations/youtube/confirm' && req.method === 'POST') {
+        const body = JSON.parse((await readBody(req)) || '{}') as { channels?: string[]; topics?: string[] };
+        const existing = userProfile.google ?? {};
+        userProfile = saveUserProfile({ ...userProfile, google: { ...existing, youtubeChannels: body.channels?.filter((v): v is string => typeof v === 'string'), youtubeTopics: body.topics?.filter((v): v is string => typeof v === 'string'), youtubeConfirmedAt: new Date().toISOString() } });
+        const old = jarvis;
+        jarvis = createBrain();
+        old.dispose();
+        return sendJson(res, 200, { success: true, profile: userProfile.google });
+      }
+      if (p === '/api/integrations/youtube' && req.method === 'DELETE') {
+        const existing = userProfile.google ?? {};
+        userProfile = saveUserProfile({ ...userProfile, google: { ...existing, youtubeChannels: undefined, youtubeTopics: undefined, youtubeConfirmedAt: undefined } });
+        const old = jarvis;
+        jarvis = createBrain();
+        old.dispose();
+        return sendJson(res, 200, { success: true });
+      }
+      if (p === '/api/integrations/google/search-history' && req.method === 'POST') {
+        const body = JSON.parse((await readBody(req)) || '{}') as { consent?: boolean; topics?: string[] };
+        if (!body.consent) return sendJson(res, 400, { error: 'Explicit search-history consent is required.' });
+        const existing = userProfile.google ?? {};
+        userProfile = saveUserProfile({ ...userProfile, google: { ...existing, searchTopics: body.topics?.filter((v): v is string => typeof v === 'string'), searchHistoryConfirmedAt: new Date().toISOString() } });
+        const old = jarvis;
+        jarvis = createBrain();
+        old.dispose();
+        return sendJson(res, 200, { success: true, topicCount: userProfile.google?.searchTopics?.length ?? 0 });
+      }
+      if (p === '/api/integrations/google/search-history' && req.method === 'DELETE') {
+        const existing = userProfile.google ?? {};
+        userProfile = saveUserProfile({ ...userProfile, google: { ...existing, searchTopics: undefined, searchHistoryConfirmedAt: undefined } });
+        const old = jarvis;
+        jarvis = createBrain();
+        old.dispose();
+        return sendJson(res, 200, { success: true });
       }
       if (p === '/api/status' && req.method === 'GET') {
         return sendJson(res, 200, {

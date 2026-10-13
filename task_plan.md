@@ -18,7 +18,7 @@ starts the server, and opens the browser.
 Complete.
 
 ## Next Step
-No required project work remains. Optional CI, production authentication, remote voice transcription, and signed packaging are documented in the project notes.
+No required project work remains. Google Cloud OAuth credentials are the only environment-specific setup; optional CI and production hardening remain documented.
 
 ## Phases
 ### Phase 1: Recover Status
@@ -75,6 +75,13 @@ Status: complete
 - Verify setup, scan, profile, and model settings APIs with a live server.
 - Verify the browser quiz/review/model workflow.
 - Remove temporary smoke-test profile data and update project notes.
+
+### Phase 9: Google And Optional Personalization Integrations
+Status: complete
+- Add Google OpenID Connect sign-in with CSRF state and in-memory tokens.
+- Add an incremental YouTube read-only connection and sanitized activity signals.
+- Add an explicit Google My Activity/Takeout search-topic import because direct history API access is unavailable.
+- Add connected-source status, consent copy, disconnect/delete controls, tests, and documentation.
 
 ## Errors Encountered
 | Error | Attempt | Resolution |

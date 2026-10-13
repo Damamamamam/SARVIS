@@ -42,3 +42,9 @@
 - The awareness boundary is metadata-only and consented: installed/running app names plus file counts, folder counts, extensions, and selected root names. Raw files and secrets are not included in the model context.
 - The profile is reviewable before persistence and can be rerun from the Profile & models view.
 - The selected reasoning model is passed into the rotator request; `auto` preserves normal failover behavior. Voice input preferences are persisted separately, with browser-native recognition as the working private default.
+
+## Google Personalization (2026-10-13)
+- Google identity and YouTube access must be incremental OAuth grants, not one broad silent consent. SARVIS requests OpenID identity first and `youtube.readonly` only when the user chooses Connect YouTube.
+- YouTube's API supports authenticated activity/subscription signals, but its personalized home feed endpoint is deprecated/unavailable; the UI labels the returned data as a preview rather than calling it a full recommendation feed.
+- Direct Google Search/My Activity history is not exposed as a general third-party API. SARVIS therefore supports a user-selected JSON export, local topic extraction, explicit import approval, and deletion.
+- Google access and personal signals are separate: disconnecting Google clears the local Google profile context and memory-only tokens; YouTube and search signals also have independent delete actions.

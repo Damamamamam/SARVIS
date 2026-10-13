@@ -8,6 +8,12 @@ On first boot SARVIS opens a setup conversation. The user explicitly chooses whe
 
 The **Profile & models** view can rerun setup, refresh the metadata snapshot, and choose separate models for the reasoning brain and voice input. Preferences are stored locally in `.sarvis-settings.json`; `browser-native` voice input remains the private, immediately available option.
 
+## Optional Google personalization
+
+SARVIS supports incremental Google sign-in from **Profile & models**. Configure `SARVIS_GOOGLE_CLIENT_ID`, `SARVIS_GOOGLE_CLIENT_SECRET`, and the matching callback URI (`http://127.0.0.1:9742/api/auth/google/callback`, or port `9743` for the desktop shell) in a Google Cloud OAuth web application. Basic sign-in requests OpenID identity scopes; **Connect YouTube** separately requests the read-only YouTube scope. Tokens stay in memory and are discarded when SARVIS stops.
+
+YouTube signals are previewed before they are saved to the local profile. SARVIS uses activity/subscription metadata, not the private personalized YouTube home recommendation feed. Google Search/My Activity history is not pulled silently: the user chooses a Google Takeout/My Activity JSON export, SARVIS extracts search topics locally in the browser, and a separate approval button imports only those topics. Each source has its own delete/disconnect control.
+
 ## 🏗️ Architecture
 
 - **Web App**: Browser chat UI (HTML5, CSS3 glassmorphism, vanilla JS) served by the Node server, with live WebSocket replies and screen-time nudges.

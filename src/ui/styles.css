@@ -111,5 +111,11 @@ select:focus { border-color: #84b497; box-shadow: 0 0 0 3px #e8f2eb; }
 .quiz-option:has(input:checked) { border-color: #84b497; color: var(--ink); background: var(--accent-soft); }
 .quiz-option input { width: auto; accent-color: var(--accent); }
 .profile-preview { padding: 14px; border-radius: 11px; color: var(--ink); background: var(--accent-soft); line-height: 1.6; font-size: 13px; }
+.integration-card { display: grid; gap: 16px; margin-top: 13px; padding: 22px; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: 0 8px 30px rgba(23,33,27,.035); }
+.integration-card h3 { margin-bottom: 7px; }
+.integration-card .section-copy { margin-bottom: 0; }
+.integration-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.integration-import { display: grid; gap: 9px; padding-top: 15px; border-top: 1px solid var(--line); }
+.integration-import .form-note { margin: 0; line-height: 1.5; }
 @media (max-width: 760px) { .shell { display: block; } .sidebar { width: auto; padding: 18px; border-right: 0; border-bottom: 1px solid var(--line); } .nav { display: flex; margin-top: 18px; } .nav-item { flex: 1; text-align: center; } .sidebar-foot { display: none; } .main { padding: 28px 18px; } .section-head { display: block; } .section-copy { margin-top: 12px; } .control-grid, .form-grid { grid-template-columns: 1fr; } .wide { grid-column: auto; } }
 @media (max-width: 760px) { .profile-grid { grid-template-columns: 1fr; } .awareness-card { display: block; } .awareness-card button { margin-top: 14px; } }
